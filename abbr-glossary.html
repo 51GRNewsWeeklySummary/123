@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>教育互联网缩写速查器</title>
+    <link rel="stylesheet" href="./abbr-glossary.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero-card">
+        <p class="eyebrow">Mini PRD / 极简版</p>
+        <h1>教育互联网缩写速查器</h1>
+        <p class="intro">
+          输入一个教育互联网常见缩写，几秒内返回英文全称、中文含义和新人也能看懂的简短解释。
+        </p>
+      </section>
+
+      <section class="workspace">
+        <div class="panel input-panel">
+          <div class="panel-head">
+            <h2>输入缩写</h2>
+            <span class="meta">一次只查 1 个</span>
+          </div>
+
+          <label class="field-label" for="abbrInput">教育互联网常见缩写</label>
+          <input
+            id="abbrInput"
+            class="abbr-input"
+            type="text"
+            maxlength="12"
+            placeholder="例如：KPI / GMV / CAC / LTV / DAU"
+            autocomplete="off"
+          />
+
+          <div class="actions">
+            <button id="searchBtn" class="primary-btn" type="button">立即查询</button>
+            <button id="clearBtn" class="secondary-btn" type="button">清空</button>
+          </div>
+
+          <p class="hint">不处理整段文章，不联网搜索，不需要额外补充上下文。</p>
+        </div>
+
+        <div class="panel output-panel">
+          <div class="panel-head">
+            <h2>查询结果</h2>
+            <button id="copyBtn" class="text-btn" type="button">复制结果</button>
+          </div>
+
+          <div id="emptyState" class="empty-state">
+            查询结果会固定展示为：缩写、英文全称、中文含义、简短解释。
+          </div>
+
+          <div id="resultCard" class="result-card" hidden aria-live="polite">
+            <div class="result-row">
+              <span class="result-label">缩写</span>
+              <span id="abbrValue" class="result-value"></span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">英文全称</span>
+              <span id="englishValue" class="result-value"></span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">中文含义</span>
+              <span id="chineseValue" class="result-value"></span>
+            </div>
+            <div class="result-row explanation-row">
+              <span class="result-label">简短解释</span>
+              <span id="explanationValue" class="result-value"></span>
+            </div>
+          </div>
+
+          <p id="errorText" class="error-text" role="alert"></p>
+        </div>
+      </section>
+    </main>
+
+    <script src="./abbr-glossary.js"></script>
+  </body>
+</html>
