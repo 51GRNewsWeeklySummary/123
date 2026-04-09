@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acronym Bot 网页版</title>
+    <link rel="stylesheet" href="./acronym-bot-web.css" />
+  </head>
+  <body class="bot-theme">
+    <main class="app-shell">
+      <section class="hero-card">
+        <p class="eyebrow">GitHub Import / dxw</p>
+        <h1>Acronym Bot 网页版</h1>
+        <p class="intro">
+          这是把 <code>dxw/acronym-bot</code> 的本地词库和查询逻辑直接搬到浏览器后的版本。
+          输入缩写，按原仓库的大小写不敏感匹配方式返回释义。
+        </p>
+      </section>
+
+      <section class="workspace">
+        <div class="panel input-panel">
+          <div class="panel-head">
+            <h2>输入缩写</h2>
+            <span class="meta">Imported from GitHub</span>
+          </div>
+
+          <label class="field-label" for="botInput">Acronym</label>
+          <input
+            id="botInput"
+            class="abbr-input"
+            type="text"
+            maxlength="24"
+            placeholder="例如：DfE / KPI / MVP / OKR"
+            autocomplete="off"
+          />
+
+          <div class="actions">
+            <button id="searchBtn" class="primary-btn" type="button">查询释义</button>
+            <button id="clearBtn" class="secondary-btn" type="button">清空</button>
+          </div>
+
+          <p class="hint">
+            词库来自仓库里的 <code>config/acronyms.yml</code>，当前保留了 bot 的原始英文释义。
+          </p>
+        </div>
+
+        <div class="panel output-panel">
+          <div class="panel-head">
+            <h2>查询结果</h2>
+            <button id="copyBtn" class="text-btn" type="button">复制结果</button>
+          </div>
+
+          <div id="emptyState" class="empty-state">
+            查询逻辑与原仓库一致：
+            <br />
+            大小写不敏感，找到首个匹配项后返回释义。
+          </div>
+
+          <div id="resultCard" class="result-card" hidden aria-live="polite">
+            <div class="result-row">
+              <span class="result-label">缩写</span>
+              <span id="abbrValue" class="result-value"></span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">释义</span>
+              <span id="meaningValue" class="result-value"></span>
+            </div>
+            <div class="result-row explanation-row">
+              <span class="result-label">来源</span>
+              <span class="result-value">dxw/acronym-bot · config/acronyms.yml</span>
+            </div>
+          </div>
+
+          <p id="errorText" class="error-text" role="alert"></p>
+        </div>
+      </section>
+    </main>
+
+    <script src="./acronym-bot-web.js"></script>
+  </body>
+</html>
