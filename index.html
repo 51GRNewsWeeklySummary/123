@@ -1,0 +1,1166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Saudi Pulse Monitor | 沙特舆情监控原型</title>
+  <style>
+    :root {
+      --ink: #17211d;
+      --muted: #5f6f68;
+      --line: #d9e3de;
+      --soft: #f6f9f7;
+      --green: #0f8b6b;
+      --green-2: #dff3ec;
+      --cyan: #0e8ca8;
+      --yellow: #f2bd3a;
+      --red: #d84a4a;
+      --white: #ffffff;
+      --shadow: 0 14px 36px rgba(23, 33, 29, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--soft);
+      font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: var(--green);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 250px 1fr;
+    }
+
+    .sidebar {
+      background: #ffffff;
+      border-right: 1px solid var(--line);
+      padding: 18px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background: var(--green);
+      color: var(--white);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav-label {
+      margin: 18px 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .nav-btn {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      margin-bottom: 7px;
+      text-align: left;
+    }
+
+    .nav-btn.active {
+      background: var(--green-2);
+      color: var(--green);
+      border-color: #b8dfd1;
+      font-weight: 700;
+    }
+
+    .pill-count {
+      min-width: 24px;
+      height: 22px;
+      border-radius: 8px;
+      background: #edf2ef;
+      display: inline-grid;
+      place-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .main {
+      min-width: 0;
+      padding: 18px 24px 34px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .title-block h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .title-block p {
+      margin: 4px 0 0;
+      color: var(--muted);
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .primary-btn {
+      background: var(--green);
+      color: var(--white);
+      border-color: var(--green);
+      padding: 9px 13px;
+      font-weight: 700;
+    }
+
+    .secondary-btn {
+      padding: 9px 13px;
+    }
+
+    .danger-btn {
+      background: #fff5f5;
+      border-color: #f1c3c3;
+      color: var(--red);
+      padding: 9px 13px;
+      font-weight: 700;
+    }
+
+    .image-strip {
+      height: 104px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 14px;
+      border: 1px solid var(--line);
+      background: #dceee8;
+    }
+
+    .image-strip img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(0.9) contrast(0.95);
+    }
+
+    .image-strip .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px;
+      background: rgba(10, 42, 33, 0.58);
+      color: var(--white);
+    }
+
+    .overlay strong {
+      display: block;
+      font-size: 18px;
+    }
+
+    .overlay span {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.86);
+    }
+
+    .health-badge {
+      min-width: 154px;
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.13);
+      border: 1px solid rgba(255,255,255,0.24);
+    }
+
+    .health-badge b {
+      font-size: 25px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .filter-panel,
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .filter-panel {
+      padding: 12px;
+      min-height: 136px;
+    }
+
+    .filter-panel h3,
+    .panel h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      padding: 7px 10px;
+      font-size: 13px;
+      background: #fff;
+    }
+
+    .chip.active {
+      background: var(--green);
+      border-color: var(--green);
+      color: var(--white);
+      font-weight: 700;
+    }
+
+    .chip.warning,
+    .chip.warning.active {
+      border-color: var(--line);
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.45fr 0.95fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .metric {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 112px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metric strong {
+      display: block;
+      margin: 7px 0 4px;
+      font-size: 24px;
+    }
+
+    .metric small {
+      color: var(--muted);
+    }
+
+    .metric.critical {
+      border-color: #efc4c4;
+      background: #fff8f8;
+    }
+
+    .metric.good {
+      border-color: #b8dfd1;
+      background: #f4fbf8;
+    }
+
+    .feed-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .feed-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      background: #fff;
+    }
+
+    .feed-item h4 {
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      border-radius: 8px;
+      padding: 2px 8px;
+      background: #edf2ef;
+      color: #435049;
+      font-size: 12px;
+    }
+
+    .tag.risk { background: #ffe5e5; color: #a73232; }
+    .tag.policy { background: #e5f5fa; color: #08738a; }
+    .tag.ok { background: #def3eb; color: #0f755c; }
+    .tag.watch { background: #fff3d0; color: #8a6200; }
+
+    .feed-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 74px);
+      gap: 6px;
+      align-content: start;
+    }
+
+    .mini-btn {
+      padding: 7px 8px;
+      font-size: 12px;
+      min-height: 34px;
+    }
+
+    .map-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .region {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      min-height: 86px;
+    }
+
+    .region strong {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .region .bar {
+      height: 8px;
+      border-radius: 8px;
+      background: #edf2ef;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      width: var(--w);
+      background: var(--green);
+    }
+
+    .bar.red i { background: var(--red); }
+    .bar.yellow i { background: var(--yellow); }
+    .bar.cyan i { background: var(--cyan); }
+
+    .risk-row,
+    .connector-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      border-top: 1px solid var(--line);
+      padding: 10px 0;
+    }
+
+    .risk-row:first-of-type,
+    .connector-row:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .risk-row p,
+    .connector-row p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status {
+      min-width: 72px;
+      text-align: center;
+      padding: 6px 9px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status.live { background: #def3eb; color: #0f755c; }
+    .status.review { background: #fff3d0; color: #8a6200; }
+    .status.blocked { background: #ffe5e5; color: #a73232; }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .tab-btn {
+      padding: 8px 11px;
+      font-size: 13px;
+    }
+
+    .tab-btn.active {
+      background: #e5f5fa;
+      border-color: #a9dce8;
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .report-preview {
+      min-height: 242px;
+      border: 1px dashed #b4c4bd;
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfdfc;
+    }
+
+    .report-preview h4 {
+      margin: 0 0 8px;
+    }
+
+    .arabic-card {
+      direction: rtl;
+      text-align: right;
+      font-family: Arial, "Tahoma", sans-serif;
+    }
+
+    .source-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(23, 33, 29, 0.32);
+      padding: 20px;
+      z-index: 20;
+    }
+
+    .modal-backdrop.active {
+      display: grid;
+    }
+
+    .modal {
+      width: min(620px, 100%);
+      background: var(--white);
+      border-radius: 8px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      box-shadow: 0 26px 80px rgba(23, 33, 29, 0.22);
+    }
+
+    .modal h3 {
+      margin: 0 0 8px;
+    }
+
+    .modal p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      max-width: 380px;
+      background: #17211d;
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      display: none;
+      z-index: 30;
+    }
+
+    .toast.active { display: block; }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        display: block;
+      }
+      .filters,
+      .grid,
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+      .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 680px) {
+      .main { padding: 14px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .metrics { grid-template-columns: 1fr; }
+      .feed-item { grid-template-columns: 1fr; }
+      .feed-actions { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .map-box { grid-template-columns: 1fr; }
+      .image-strip { height: 160px; }
+      .image-strip .overlay { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">KSA</div>
+        <div>
+          <h1>Saudi Pulse Monitor</h1>
+          <p>沙特舆情监控 · 政策风险 · 51Talk品牌安全 · 行业情况</p>
+        </div>
+      </div>
+
+      <button class="primary-btn" style="width:100%; margin-bottom:10px;" data-action="newCase">+ 新建监测方案</button>
+      <button class="secondary-btn" style="width:100%;" data-action="demoAlert">演示一键预警</button>
+
+      <div class="nav-label">监控工作台</div>
+      <button class="nav-btn active" data-section="overview">总览 <span class="pill-count">30</span></button>
+      <button class="nav-btn" data-section="feed">实时信息流 <span class="pill-count">126</span></button>
+      <button class="nav-btn" data-section="policy">政策合规雷达 <span class="pill-count">7</span></button>
+      <button class="nav-btn" data-section="industry">行业情况 <span class="pill-count">18</span></button>
+      <button class="nav-btn" data-section="reports">报告中心 <span class="pill-count">4</span></button>
+      <button class="nav-btn" data-section="connectors">数据接入 <span class="pill-count">12</span></button>
+
+      <div class="nav-label">51Talk重点对象</div>
+      <button class="nav-btn" data-action="keyword">51Talk KSA <span class="pill-count">42</span></button>
+      <button class="nav-btn" data-action="keyword">51Talk品牌声量 <span class="pill-count">18</span></button>
+      <button class="nav-btn" data-action="keyword">课程与家长反馈 <span class="pill-count">11</span></button>
+      <button class="nav-btn" data-action="keyword">教师与用工风险 <span class="pill-count">7</span></button>
+      <button class="nav-btn" data-action="keyword">广告与KOL合规 <span class="pill-count">5</span></button>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="title-block">
+          <h2>沙特舆情监控工作台草稿</h2>
+          <p>面向政府事务、品牌安全、竞品追踪与本地合规预警。时间按 Riyadh UTC+3 显示。</p>
+        </div>
+        <div class="top-actions">
+          <button class="secondary-btn" data-action="refresh">刷新监测</button>
+          <button class="danger-btn" data-action="riskDesk">打开风险台</button>
+          <button class="primary-btn" data-action="export">导出日报</button>
+        </div>
+      </div>
+
+      <div class="image-strip">
+        <img alt="Riyadh skyline" src="https://images.unsplash.com/photo-1674822858255-fcc093a1ef43?auto=format&fit=crop&fm=jpg&q=80&w=1800">
+        <div class="overlay">
+          <div>
+            <strong>Riyadh-centered, MENA-aware</strong>
+            <span>覆盖社媒、新闻、政策公告、招聘/KOL、竞品动态；支持阿英双语标签。</span>
+          </div>
+          <div class="health-badge">
+            <b id="healthScore">82</b>
+            <span>Brand Safety Score</span>
+          </div>
+        </div>
+      </div>
+
+      <section class="filters" aria-label="筛选器">
+        <div class="filter-panel">
+          <h3>时间范围</h3>
+          <div class="button-row" data-group="time">
+            <button class="chip active">今天</button>
+            <button class="chip">24小时</button>
+            <button class="chip">近三天</button>
+            <button class="chip">近七天</button>
+            <button class="chip">近30天</button>
+            <button class="chip">自定义</button>
+          </div>
+        </div>
+        <div class="filter-panel">
+          <h3>沙特本土平台</h3>
+          <div class="button-row" data-group="platform">
+            <button class="chip active">X</button>
+            <button class="chip active">Snapchat</button>
+            <button class="chip active">TikTok</button>
+            <button class="chip active">Instagram</button>
+            <button class="chip">YouTube</button>
+            <button class="chip">LinkedIn</button>
+            <button class="chip">本地新闻</button>
+          </div>
+        </div>
+        <div class="filter-panel">
+          <h3>风险主题</h3>
+          <div class="button-row" data-group="risk">
+            <button class="chip active warning">教育许可</button>
+            <button class="chip active warning">PDPL数据</button>
+            <button class="chip active warning">Mawthooq广告</button>
+            <button class="chip">未成年人</button>
+            <button class="chip">教师用工</button>
+            <button class="chip">竞品扩散</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="metrics" aria-label="核心指标">
+        <div class="metric good">
+          <span>今日总声量</span>
+          <strong id="volume">1,284</strong>
+          <small>较昨日 +14%，主要来自X与TikTok</small>
+        </div>
+        <div class="metric critical">
+          <span>需人工复核</span>
+          <strong id="reviewCount">17</strong>
+          <small>广告承诺、儿童内容、资质表述优先</small>
+        </div>
+        <div class="metric">
+          <span>竞品可见动作</span>
+          <strong>9</strong>
+          <small>行业情况：线下学习中心、英语测试、AI英语学习与本地KOL</small>
+        </div>
+        <div class="metric">
+          <span>本地情绪</span>
+          <strong>+0.31</strong>
+          <small>阿语评论偏中性，家长群话题需跟踪</small>
+        </div>
+      </section>
+
+      <div class="grid">
+        <section>
+          <div class="tabs">
+            <button class="tab-btn active" data-view="overview">总览</button>
+            <button class="tab-btn" data-view="feed">实时信息流</button>
+            <button class="tab-btn" data-view="policy">政策合规</button>
+            <button class="tab-btn" data-view="industry">行业情况</button>
+            <button class="tab-btn" data-view="reports">报告生成</button>
+            <button class="tab-btn" data-view="connectors">接入方案</button>
+          </div>
+
+          <div class="view active" id="overview">
+            <div class="panel">
+              <h3>今日舆情摘要</h3>
+              <div class="feed-list">
+                <article class="feed-item">
+                  <div>
+                    <h4>阿语家长讨论：线上英语课“老师稳定性”和“儿童安全”被反复提及</h4>
+                    <div class="meta">
+                      <span class="tag watch">家长社群</span><span>X / Snapchat</span><span>Riyadh · 11:20</span><span>情绪：中性偏谨慎</span>
+                    </div>
+                  </div>
+                  <div class="feed-actions">
+                    <button class="mini-btn" data-action="assign">分派</button>
+                    <button class="mini-btn" data-action="brief">摘要</button>
+                  </div>
+                </article>
+                <article class="feed-item">
+                  <div>
+                    <h4>行业观察：Riyadh线下英语学习中心内容被二次传播，关键词集中在儿童阅读与本地化教育</h4>
+                    <div class="meta">
+                      <span class="tag policy">竞品</span><span>LinkedIn / 新闻</span><span>Riyadh · 09:45</span><span>情绪：正面</span>
+                    </div>
+                  </div>
+                  <div class="feed-actions">
+                    <button class="mini-btn" data-action="compare">对比</button>
+                    <button class="mini-btn" data-action="save">收藏</button>
+                  </div>
+                </article>
+                <article class="feed-item">
+                  <div>
+                    <h4>疑似KOL推广文案出现“保证提升口语”表述，需核对Mawthooq许可与广告承诺边界</h4>
+                    <div class="meta">
+                      <span class="tag risk">风险</span><span>TikTok / Instagram</span><span>Jeddah · 08:10</span><span>情绪：待复核</span>
+                    </div>
+                  </div>
+                  <div class="feed-actions">
+                    <button class="mini-btn" data-action="escalate">升级</button>
+                    <button class="mini-btn" data-action="hide">降噪</button>
+                  </div>
+                </article>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>地区热度</h3>
+              <div class="map-box">
+                <div class="region"><strong>Riyadh <span>46%</span></strong><div class="bar" style="--w:46%"><i></i></div></div>
+                <div class="region"><strong>Jeddah <span>22%</span></strong><div class="bar cyan" style="--w:22%"><i></i></div></div>
+                <div class="region"><strong>Dammam <span>13%</span></strong><div class="bar yellow" style="--w:13%"><i></i></div></div>
+                <div class="region"><strong>Makkah / Madinah <span>9%</span></strong><div class="bar" style="--w:9%"><i></i></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="view" id="feed">
+            <div class="panel">
+              <h3>实时信息流</h3>
+              <div class="feed-list" id="feedList"></div>
+            </div>
+          </div>
+
+          <div class="view" id="policy">
+            <div class="panel">
+              <h3>政策合规雷达</h3>
+              <div class="risk-row">
+                <div><strong>NeLC e-learning许可与质量标准</strong><p>用于识别“官方认证、线上教育许可、学习结果保证”等敏感表述。</p></div>
+                <span class="status review">复核中</span>
+              </div>
+              <div class="risk-row">
+                <div><strong>SDAIA / PDPL个人数据保护</strong><p>学生照片、课堂截图、未成年人数据、跨境传输和营销同意需要重点标注。</p></div>
+                <span class="status live">已接入</span>
+              </div>
+              <div class="risk-row">
+                <div><strong>GAMR / Mawthooq广告内容许可</strong><p>KOL推广、付费测评、折扣承诺和效果承诺进入高优先级预警。</p></div>
+                <span class="status review">复核中</span>
+              </div>
+              <div class="risk-row">
+                <div><strong>MCIT / CST数字服务语境</strong><p>数字平台、通信、在线服务稳定性、技术合作和数据基础设施。</p></div>
+                <span class="status live">已接入</span>
+              </div>
+              <div class="button-row" style="margin-top:12px;">
+                <button class="primary-btn" data-action="policyPack">生成政策风险包</button>
+                <button class="secondary-btn" data-action="ruleEditor">编辑触发词</button>
+                <button class="secondary-btn" data-action="lawUpdate">检查法规更新</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="view" id="industry">
+            <div class="panel">
+              <h3>行业情况与竞品观察</h3>
+              <div class="two-col">
+                <div class="report-preview">
+                  <h4>线下学习中心趋势</h4>
+                  <p>监测VIPKid等机构在Riyadh的线下中心、儿童阅读空间、本地合作伙伴和开业活动。</p>
+                  <button class="secondary-btn" data-action="openCompetitor">查看行业案例</button>
+                </div>
+                <div class="report-preview">
+                  <h4>英语测试与认证</h4>
+                  <p>监测Duolingo English Test等机构的高校认可、考试公平、AI评估和专业背书。</p>
+                  <button class="secondary-btn" data-action="openCompetitor">查看认证趋势</button>
+                </div>
+                <div class="report-preview">
+                  <h4>AI英语学习</h4>
+                  <p>监测Learna AI、Codeway等产品的AI tutor、App排名、广告投放和阿语本地化迹象。</p>
+                  <button class="secondary-btn" data-action="openCompetitor">查看AI信号</button>
+                </div>
+                <div class="report-preview">
+                  <h4>本地教育KOL</h4>
+                  <p>监测重点：是否有Mawthooq许可、内容是否标广告、是否出现儿童/课堂素材。</p>
+                  <button class="secondary-btn" data-action="kolCheck">KOL许可核查</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="view" id="reports">
+            <div class="panel">
+              <h3>报告生成器</h3>
+              <div class="two-col">
+                <div>
+                  <div class="button-row">
+                    <button class="chip active" data-report="daily">日报</button>
+                    <button class="chip" data-report="weekly">周报</button>
+                    <button class="chip" data-report="risk">风险专报</button>
+                    <button class="chip" data-report="competitor">竞品专报</button>
+                    <button class="chip" data-report="arabic">阿语摘要</button>
+                  </div>
+                  <p class="source-note">报告可导出为Word、PDF、PPT摘要。演示稿当前使用静态样例，真实系统可对接API与人工复核流。</p>
+                  <div class="button-row" style="margin-top:12px;">
+                    <button class="primary-btn" data-action="buildReport">生成报告</button>
+                    <button class="secondary-btn" data-action="copyBrief">复制给领导</button>
+                    <button class="secondary-btn" data-action="makePpt">生成PPT提纲</button>
+                  </div>
+                </div>
+                <div class="report-preview" id="reportPreview">
+                  <h4>今日摘要</h4>
+                  <p>1. 总声量上升，主要来自X、TikTok和本地新闻。</p>
+                  <p>2. 需复核内容集中在广告承诺、未成年人素材和教育许可表述。</p>
+                  <p>3. 线下学习中心、英语测试和AI英语学习是本周行业观察重点。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="view" id="connectors">
+            <div class="panel">
+              <h3>数据接入与可实现路径</h3>
+              <div class="connector-row">
+                <div><strong>公开新闻源 / RSS / 网页抓取</strong><p>SPA、Arab News、Saudi Gazette、Okaz、Sabq、Al Riyadh、Argaam等，适合日常稳定接入。</p></div>
+                <span class="status live">可实现</span>
+              </div>
+              <div class="connector-row">
+                <div><strong>社媒公开内容API与合规采集</strong><p>X、YouTube、LinkedIn公开页、TikTok公开搜索需要按平台条款和权限分级接入。</p></div>
+                <span class="status review">需权限</span>
+              </div>
+              <div class="connector-row">
+                <div><strong>Snapchat / WhatsApp / Telegram</strong><p>高价值但受隐私和平台限制，建议只监测公开频道、公开账号和人工提交线索。</p></div>
+                <span class="status review">半自动</span>
+              </div>
+              <div class="connector-row">
+                <div><strong>阿语NLP与人工复核</strong><p>使用阿语分词、方言词表、情绪分类、敏感词库，再由本地人员复核高风险内容。</p></div>
+                <span class="status live">可实现</span>
+              </div>
+              <div class="button-row" style="margin-top:12px;">
+                <button class="primary-btn" data-action="connectorPlan">生成接入清单</button>
+                <button class="secondary-btn" data-action="sourceMatrix">查看来源矩阵</button>
+                <button class="secondary-btn" data-action="permission">权限评估</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside>
+          <div class="panel">
+            <h3>阿语监控卡片</h3>
+            <div class="report-preview arabic-card" id="arabicCard">
+              <h4>ملخص اليوم</h4>
+              <p>تم رصد نقاشات حول جودة التعليم الإلكتروني وحماية بيانات الطلاب والإعلانات المؤثرة.</p>
+              <p>الأولوية: مراجعة المحتوى المتعلق بالأطفال وادعاءات تحسين النتائج.</p>
+            </div>
+            <div class="button-row" style="margin-top:12px;">
+              <button class="secondary-btn" data-action="arabicCopy">复制阿语摘要</button>
+              <button class="secondary-btn" data-action="rtlPreview">RTL预览</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>预警规则</h3>
+            <div class="risk-row">
+              <div><strong>High Risk</strong><p>官方认证、保证提升、儿童正脸、课堂截图、政府背书。</p></div>
+              <span class="status blocked">阻断</span>
+            </div>
+            <div class="risk-row">
+              <div><strong>Review</strong><p>KOL推广、付费合作、竞品攻击、家长投诉、退款争议。</p></div>
+              <span class="status review">复核</span>
+            </div>
+            <div class="risk-row">
+              <div><strong>Watch</strong><p>政策更新、招聘舆情、教师用工、App评分波动。</p></div>
+              <span class="status live">观察</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>本土化关键词</h3>
+            <div class="button-row">
+              <button class="chip">التعليم الإلكتروني</button>
+              <button class="chip">موثوق</button>
+              <button class="chip">حماية البيانات</button>
+              <button class="chip">وزارة التعليم</button>
+              <button class="chip">تعلم الإنجليزية</button>
+              <button class="chip">Vision 2030</button>
+              <button class="chip">NeLC</button>
+              <button class="chip">PDPL</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>资料依据</h3>
+            <p class="source-note">原型依据公开资料建模：Saudi National eLearning Center的e-learning许可与标准、SDAIA/PDPL个人数据保护框架、GAMR/Mawthooq社媒广告内容许可，以及沙特社媒使用习惯。实际上线需由法务确认采集边界。</p>
+            <p class="source-note">图片：Riyadh skyline by Mohammed Alqarni on Unsplash。</p>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modal">
+    <div class="modal">
+      <h3 id="modalTitle">操作确认</h3>
+      <p id="modalBody">这里会展示当前按钮对应的演示动作。</p>
+      <div class="modal-actions">
+        <button class="secondary-btn" data-action="closeModal">取消</button>
+        <button class="primary-btn" data-action="confirmModal">确认执行</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">操作已记录。</div>
+
+  <script>
+    const feedData = [
+      {
+        title: '本地教育账号讨论“在线英语课是否适合低龄学生”，评论区出现隐私和课堂截图担忧',
+        tags: ['未成年人', 'PDPL', '家长讨论'],
+        source: 'X / Instagram',
+        place: 'Riyadh',
+        time: '12:08',
+        risk: 'Review'
+      },
+      {
+        title: 'KOL短视频提到“30天保证开口”，疑似商业合作但未明显标注广告',
+        tags: ['Mawthooq', '广告承诺', 'KOL'],
+        source: 'TikTok',
+        place: 'Jeddah',
+        time: '11:34',
+        risk: 'High'
+      },
+      {
+        title: '沙特本地媒体报道数字学习项目，NeLC与人力资本发展议题被多次引用',
+        tags: ['政策', 'NeLC', '数字学习'],
+        source: 'Local News',
+        place: 'Riyadh',
+        time: '10:50',
+        risk: 'Watch'
+      },
+      {
+        title: 'LinkedIn上教育从业者讨论英语测试与AI评估，关键词为公平性、认可度与远程考试',
+        tags: ['行业情况', '英语测试', 'AI评估'],
+        source: 'LinkedIn',
+        place: 'Unknown',
+        time: '09:22',
+        risk: 'Watch'
+      }
+    ];
+
+    const actions = {
+      newCase: ['新建监测方案', '建议方案名：51Talk Saudi Public Affairs。默认包含品牌、竞品、政策、KOL广告、未成年人保护五个主题。'],
+      demoAlert: ['一键预警演示', '已模拟触发：TikTok KOL广告承诺 + 未标注商业合作 + 儿童学习效果承诺。建议流转给法务与市场负责人。'],
+      refresh: ['刷新监测', '已更新今日声量、复核数量和实时信息流。演示数据会上下浮动，方便展示动态效果。'],
+      riskDesk: ['风险台', '风险台将聚合High Risk内容：官方认证、政府背书、儿童素材、广告承诺、数据隐私。'],
+      export: ['导出日报', '日报结构：今日摘要、风险列表、竞品动态、政策观察、明日建议。可实现为Word/PDF导出。'],
+      assign: ['分派任务', '已分派给：Public Affairs + Legal Review。SLA建议：高风险2小时内确认。'],
+      brief: ['生成摘要', 'AI摘要：家长关注教师稳定性、儿童隐私、学习效果真实性。建议对外强调课堂安全和教师质量。'],
+      compare: ['行业对比', '已加入行业情况观察池：线下学习中心、本地合作伙伴、招聘岗位、KOL扩散。'],
+      save: ['收藏线索', '该条已加入“竞品月报”。'],
+      escalate: ['升级预警', '已升级为Level 2：涉及广告承诺和KOL许可边界，需人工复核。'],
+      hide: ['降噪处理', '已将重复转发与低影响账号降权。'],
+      policyPack: ['政策风险包', '生成内容：NeLC许可词、PDPL敏感素材、Mawthooq广告标识、未成年人保护清单。'],
+      ruleEditor: ['触发词编辑器', '可编辑阿语、英语、中文触发词，例如 موثوق、guaranteed results、officially approved。'],
+      lawUpdate: ['法规更新检查', '建议接入官方源：NeLC、SDAIA、GAMR、MCIT、HRSD、MISA。'],
+      openCompetitor: ['竞品详情', '已展开传播链：官方号、创始人/高管个人号、招聘页、本地合作方、新闻源。'],
+      kolCheck: ['KOL许可核查', '核查字段：账号名、Mawthooq状态、广告标注、内容授权、儿童素材、投放国家。'],
+      buildReport: ['报告生成', '已生成“Saudi Public Sentiment Daily Brief”。右侧预览已更新。'],
+      copyBrief: ['复制给领导', '已复制一版短摘要：风险3条、竞品2条、建议3条。'],
+      makePpt: ['PPT提纲', '已生成5页提纲：总览、风险、竞品、政策、下一步。'],
+      connectorPlan: ['接入清单', '优先级：官方政策源 > 本地新闻 > LinkedIn/X > YouTube/TikTok > Snapchat公开账号 > 人工线索。'],
+      sourceMatrix: ['来源矩阵', '已展示按可得性、合规风险、时效性、阿语覆盖划分的数据来源矩阵。'],
+      permission: ['权限评估', '平台采集需分级：API授权、公开页面、RSS、人工录入、第三方供应商。'],
+      arabicCopy: ['阿语摘要', '阿语摘要已复制。建议由本地母语人员复核后对外使用。'],
+      rtlPreview: ['RTL预览', '已切换阿语卡片方向，用于展示阿语内容排版。'],
+      keyword: ['对象筛选', '已切换重点对象。真实系统中会刷新关键词包、竞品词库和风险规则。']
+    };
+
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const toast = document.getElementById('toast');
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('active');
+      window.setTimeout(() => toast.classList.remove('active'), 2200);
+    }
+
+    function showModal(title, body) {
+      modalTitle.textContent = title;
+      modalBody.textContent = body;
+      modal.classList.add('active');
+    }
+
+    function renderFeed() {
+      const list = document.getElementById('feedList');
+      list.innerHTML = '';
+      feedData.forEach(item => {
+        const riskClass = item.risk === 'High' ? 'risk' : item.risk === 'Review' ? 'watch' : 'policy';
+        const tags = item.tags.map(tag => `<span class="tag ${riskClass}">${tag}</span>`).join('');
+        list.insertAdjacentHTML('beforeend', `
+          <article class="feed-item">
+            <div>
+              <h4>${item.title}</h4>
+              <div class="meta">${tags}<span>${item.source}</span><span>${item.place} · ${item.time}</span><span>${item.risk}</span></div>
+            </div>
+            <div class="feed-actions">
+              <button class="mini-btn" data-action="brief">摘要</button>
+              <button class="mini-btn" data-action="assign">分派</button>
+              <button class="mini-btn" data-action="save">收藏</button>
+              <button class="mini-btn" data-action="escalate">升级</button>
+            </div>
+          </article>
+        `);
+      });
+    }
+
+    function switchView(viewId) {
+      document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      const view = document.getElementById(viewId);
+      const tab = document.querySelector(`.tab-btn[data-view="${viewId}"]`);
+      if (view) view.classList.add('active');
+      if (tab) tab.classList.add('active');
+    }
+
+    document.addEventListener('click', event => {
+      const actionEl = event.target.closest('[data-action]');
+      const tabEl = event.target.closest('[data-view]');
+      const navEl = event.target.closest('[data-section]');
+
+      if (tabEl) {
+        switchView(tabEl.dataset.view);
+        return;
+      }
+
+      if (navEl) {
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        navEl.classList.add('active');
+        switchView(navEl.dataset.section);
+        return;
+      }
+
+      if (event.target.classList.contains('chip') && event.target.parentElement?.dataset.group) {
+        event.target.classList.toggle('active');
+        showToast('筛选条件已更新');
+        return;
+      }
+
+      if (event.target.classList.contains('chip') && event.target.dataset.report) {
+        document.querySelectorAll('[data-report]').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        const preview = document.getElementById('reportPreview');
+        const type = event.target.dataset.report;
+        const content = {
+          daily: '<h4>今日摘要</h4><p>1. 总声量上升，主要来自X、TikTok和本地新闻。</p><p>2. 需复核内容集中在广告承诺、未成年人素材和教育许可表述。</p><p>3. 线下学习中心、英语测试和AI英语学习是本周行业观察重点。</p>',
+          weekly: '<h4>周报摘要</h4><p>本周风险主题：KOL广告透明度、在线教育许可表述、儿童学习素材授权。</p><p>建议：建立阿语触发词库和本地人工复核SLA。</p>',
+          risk: '<h4>风险专报</h4><p>红色风险：保证提升、官方认证、儿童正脸课堂截图。</p><p>处理建议：暂停外发、法务复核、统一回复口径。</p>',
+          competitor: '<h4>行业专报</h4><p>线下学习中心强调本地化；英语测试强调评估科学；AI英语学习产品强调AI tutor与App增长。</p>',
+          arabic: '<div class="arabic-card"><h4>ملخص عربي</h4><p>تركز المخاطر على الإعلانات المؤثرة وحماية بيانات الطلاب وجودة التعليم الإلكتروني.</p></div>'
+        };
+        preview.innerHTML = content[type];
+        return;
+      }
+
+      if (!actionEl) return;
+      const action = actionEl.dataset.action;
+      if (action === 'closeModal') {
+        modal.classList.remove('active');
+        return;
+      }
+      if (action === 'confirmModal') {
+        modal.classList.remove('active');
+        showToast('已确认执行，演示记录已更新');
+        return;
+      }
+      if (action === 'refresh') {
+        const volume = document.getElementById('volume');
+        const review = document.getElementById('reviewCount');
+        const health = document.getElementById('healthScore');
+        volume.textContent = '1,' + (240 + Math.floor(Math.random() * 90));
+        review.textContent = String(12 + Math.floor(Math.random() * 9));
+        health.textContent = String(78 + Math.floor(Math.random() * 9));
+      }
+      const [title, body] = actions[action] || ['演示操作', '该按钮已接入演示动作，可在正式系统中绑定真实工作流。'];
+      showModal(title, body);
+    });
+
+    modal.addEventListener('click', event => {
+      if (event.target === modal) modal.classList.remove('active');
+    });
+
+    renderFeed();
+  </script>
+</body>
+</html>
