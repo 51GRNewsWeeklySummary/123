@@ -837,7 +837,33 @@
     let currentSearch = "";
     let featuredOnly = false;
     let currentDetailId = weeklyItems[0]?.id ?? null;
-    const favoriteIds = new Set();
+    const storageKeys = {
+      favorites: "gr_weekly_favorites",
+      deleted: "gr_weekly_deleted"
+    };
+
+    function readStoredIds(key) {
+      try {
+        const raw = window.localStorage.getItem(key);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map((value) => Number(value)).filter((value) => Number.isFinite(value));
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveStoredIds(key, set) {
+      try {
+        window.localStorage.setItem(key, JSON.stringify([...set]));
+      } catch (error) {
+        console.warn(`无法写入本地存储: ${key}`, error);
+      }
+    }
+
+    const favoriteIds = new Set(readStoredIds(storageKeys.favorites));
+    const deletedIds = new Set(readStoredIds(storageKeys.deleted));
 
     const itemList = document.getElementById("itemList");
     const detailPanel = document.getElementById("detailPanel");
@@ -867,7 +893,7 @@
     }
 
     function getFilteredItems() {
-      let result = [...weeklyItems];
+      let result = weeklyItems.filter((item) => !deletedIds.has(item.id));
 
       if (currentRange !== "all") {
         const maxDays = Number(currentRange);
@@ -955,7 +981,7 @@
     function renderDetailPanel() {
       const favorites = [...favoriteIds]
         .map((id) => weeklyItems.find((item) => item.id === id))
-        .filter(Boolean);
+        .filter((item) => item && !deletedIds.has(item.id));
 
       if (!favorites.length) {
         detailPanel.innerHTML = `
@@ -1113,6 +1139,7 @@
         } else {
           favoriteIds.add(id);
         }
+        saveStoredIds(storageKeys.favorites, favoriteIds);
         refresh();
         return;
       }
@@ -1142,11 +1169,14 @@
 
         const index = weeklyItems.findIndex((entry) => entry.id === id);
         if (index === -1) return;
-        weeklyItems.splice(index, 1);
+        deletedIds.add(id);
         favoriteIds.delete(id);
+        saveStoredIds(storageKeys.deleted, deletedIds);
+        saveStoredIds(storageKeys.favorites, favoriteIds);
 
         if (currentDetailId === id) {
-          currentDetailId = weeklyItems[index]?.id ?? weeklyItems[index - 1]?.id ?? weeklyItems[0]?.id ?? null;
+          const visibleItems = getFilteredItems();
+          currentDetailId = visibleItems[index]?.id ?? visibleItems[index - 1]?.id ?? visibleItems[0]?.id ?? null;
         }
 
         refresh();
@@ -1180,6 +1210,7 @@
       }
       if (!favoriteIds.has(id)) return;
       favoriteIds.delete(id);
+      saveStoredIds(storageKeys.favorites, favoriteIds);
       refresh();
     });
 
