@@ -352,6 +352,157 @@
       word-break: break-all;
     }
 
+    .detail-preview-title {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .favorite-hint {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .favorite-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .favorite-item {
+      width: 100%;
+      text-align: left;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+      cursor: pointer;
+    }
+
+    .favorite-item:hover {
+      border-color: var(--accent);
+      background: #f6fbfa;
+    }
+
+    .favorite-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .favorite-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .favorite-empty {
+      margin-top: 14px;
+      padding: 18px 14px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      background: #fbfcfd;
+      font-size: 13px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: stretch;
+      justify-content: center;
+      background: rgba(17, 29, 37, 0.56);
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(1180px, 100%);
+      height: 100%;
+      max-height: calc(100vh - 40px);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 24px 60px rgba(24, 36, 45, 0.24);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      overflow: hidden;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+
+    .modal-head h2 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.35;
+    }
+
+    .modal-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .modal-close {
+      min-width: 88px;
+    }
+
+    .modal-content {
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .modal-section {
+      padding-top: 14px;
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .modal-section:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .modal-section h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .modal-section p {
+      margin: 0;
+    }
+
+    .modal-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .modal-links a {
+      color: var(--blue);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
     .empty {
       padding: 28px 16px;
       text-align: center;
@@ -393,6 +544,26 @@
       .item-actions {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+
+      .modal-overlay {
+        padding: 10px;
+      }
+
+      .modal-card {
+        max-height: calc(100vh - 20px);
+      }
+
+      .modal-head {
+        padding: 14px;
+      }
+
+      .modal-head h2 {
+        font-size: 22px;
+      }
+
+      .modal-content {
+        padding: 14px;
+      }
     }
   </style>
 </head>
@@ -410,8 +581,8 @@
         <div class="chip-grid" id="rangeChips">
           <button class="chip" data-range="3">近三天</button>
           <button class="chip" data-range="7">近一周</button>
-          <button class="chip active" data-range="30">近一月</button>
-          <button class="chip" data-range="90">近三月</button>
+          <button class="chip" data-range="30">近一月</button>
+          <button class="chip active" data-range="all">全部</button>
         </div>
       </div>
 
@@ -467,1062 +638,178 @@
       </section>
 
       <aside class="detail-panel" id="detailPanel">
-        <h2>先点开一条信息</h2>
+        <h2>收藏夹</h2>
         <div class="detail-meta">
-          <span>选择左侧条目查看完整信息</span>
+          <span>单击打开详情，双击取消收藏。</span>
         </div>
       </aside>
     </div>
   </div>
 
+  <div class="modal-overlay" id="detailModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <div>
+          <h2 id="modalTitle">查看详情</h2>
+          <div class="modal-meta" id="modalMeta"></div>
+        </div>
+        <button class="ghost-btn modal-close" id="modalClose" type="button">关闭</button>
+      </div>
+      <div class="modal-content" id="modalContent"></div>
+    </div>
+  </div>
+
   <script>
-    const spaRiyadhOnline = {
-      date: "2026-04-21",
-      platform: "政府通稿",
-      source: "SPA",
-      links: ["https://www.spa.gov.sa/en/N2566507"]
-    };
-
-    const spaTuwaiqApple = {
-      date: "2026-04-20",
-      platform: "政府通稿",
-      source: "SPA",
-      links: ["https://www.spa.gov.sa/en/N2565918"]
-    };
-
-    const spaChemistry = {
-      date: "2026-04-20",
-      platform: "政府通稿",
-      source: "SPA",
-      links: ["https://www.spa.gov.sa/en/N2565769"]
-    };
-
-    const spaMediaGraduates = {
-      date: "2026-04-19",
-      platform: "政府通稿",
-      source: "SPA",
-      links: ["https://www.spa.gov.sa/en/N2565222"]
-    };
-
-    const spaQuantum = {
-      date: "2026-04-18",
-      platform: "政府通稿",
-      source: "SPA",
-      links: ["https://www.spa.gov.sa/en/N2564553"]
-    };
-
-    const spaBologna = {
-      date: "2026-04-17",
-      platform: "政府通稿",
-      source: "SPA",
-      links: ["https://www.spa.gov.sa/en/N2564273"]
-    };
-
-    const spaMediaAcademy = {
-      date: "2026-04-17",
-      platform: "政府通稿",
-      source: "SPA",
-      links: ["https://www.spa.gov.sa/en/N2563969"]
-    };
-
-    const spaIthra = {
-      date: "2026-04-16",
-      platform: "政府通稿",
-      source: "SPA",
-      links: ["https://www.spa.gov.sa/en/N2563315"]
-    };
-
-    const spaStanford = {
-      date: "2026-04-15",
-      platform: "官方/二次报道",
-      source: "SPA / Arab News",
-      links: [
-        "https://www.spa.gov.sa/en/N2559779",
-        "https://www.arabnews.com/node/2639943/amp"
-      ]
-    };
-
-    const saudiGazetteWeather = {
-      date: "2026-04-12",
-      platform: "新闻媒体",
-      source: "Saudi Gazette",
-      links: ["https://saudigazette.com.sa/article/660458"]
-    };
-
-    const minervaContinuity = {
-      date: "2026-04-20",
-      platform: "行业媒体",
-      source: "Education UAE",
-      links: ["https://www.education-uae.com/minerva-virtual-academy-academic-continuity/"]
-    };
-
-    const arabNewsPeace = {
-      date: "2026-04-11",
-      platform: "新闻媒体",
-      source: "Arab News",
-      links: ["https://www.arabnews.com/node/2639591/amp"]
-    };
-
-    const arabNewsPos = {
-      date: "2026-04-10",
-      platform: "新闻媒体",
-      source: "Arab News",
-      links: ["https://www.arabnews.pk/node/2639432"]
-    };
-
     const weeklyItems = [
       {
         id: 1,
-        title: "利雅得教育部门宣布 13 个省份周二线下课转线上",
+        title: "利雅得教育部门在 13 个省份启用线上授课，并明确只能通过 Madrasati 与获批平台实施",
         category: "政策",
         priority: "high",
         featured: true,
-        tags: ["利雅得", "线上教学", "应急机制"],
-        summary: "利雅得地区教育管理部门宣布，在 13 个省份暂停线下课并转为线上授课。",
-        whyItMatters: "这是近一周最直接的教育政策动作，体现远程教学已成为标准化应急选项。",
-        nextAction: "跟踪是否扩展到更多地区，以及后续是否形成固定预案文本。",
-        ...spaRiyadhOnline
+        tags: ["Madrasati", "获批平台", "教育应急", "平台准入"],
+        summary: "Saudi Press Agency 于 2026 年 4 月 21 日报道，利雅得地区教育管理部门宣布 13 个省份当日线下课转线上，且明确通过 Madrasati 平台及其他获批教育平台开展，覆盖学生、教师和行政人员。",
+        whyItMatters: "这不是单次停课通知，而是官方再次确认线上教学已有指定平台口径和合规边界。对外来平台而言，‘是否获批、是否被纳入既有体系’比单纯功能更关键。",
+        nextAction: "后续持续跟踪 Saudi MOE / Riyadh Education 对“approved educational platforms”“Madrasati”表述的延伸，观察平台准入是否会进一步细化为白名单或接入要求。",
+        date: "2026-04-21",
+        platform: "政府通稿",
+        source: "SPA",
+        links: ["https://www.spa.gov.sa/en/N2566507"]
       },
       {
         id: 2,
-        title: "线上授课明确通过 Madrasati 及其他获批平台实施",
+        title: "教育部与 ETEC 推出教育状态室分部门窗口，教育治理进一步走向数据驱动",
         category: "政策",
         priority: "high",
         featured: true,
-        tags: ["Madrasati", "获批平台", "平台治理"],
-        summary: "公告明确远程教学需通过 Madrasati 平台和其他获批教育平台开展。",
-        whyItMatters: "这说明沙特并非临时转网课，而是已有明确的平台口径和合规边界。",
-        nextAction: "继续搜集“获批平台”与“指定平台”表述，观察平台准入和治理要求。",
-        ...spaRiyadhOnline
+        tags: ["MOE", "ETEC", "dashboard", "数据治理"],
+        summary: "MOE 于 2026 年 4 月 9 日披露，Education and Training Status Room 已向各教育部门开放专属窗口，使各部门能够直接访问和分析绩效数据、识别差距并制定干预计划。",
+        whyItMatters: "这说明沙特教育治理正进一步从项目驱动走向数据驱动。对在线教育公司而言，未来对话很可能围绕可量化成效、绩效追踪和数据接入展开，而不只是课程数量。",
+        nextAction: "重点监测 MOE、ETEC 后续是否发布更细的 performance data、improvement plan、evaluation 指标口径，判断这类数据平台是否会外溢到供应商考核或合作门槛。",
+        date: "2026-04-09",
+        platform: "政府官网",
+        source: "Ministry of Education",
+        links: ["https://www.moe.gov.sa/en/mediacenter/MOEnews/Pages/The-Education-and-Training-Evaluation.aspx"]
       },
       {
         id: 3,
-        title: "转线上范围覆盖学生、教师与行政人员",
+        title: "SDAIA 就 Responsible AI 政策草案征求意见，AI 使用正在进入更明确的监管框架",
         category: "政策",
-        priority: "mid",
-        featured: false,
-        tags: ["学校运营", "教师", "行政人员"],
-        summary: "此次线上安排不仅针对学生，也覆盖教学和行政人员的工作组织。",
-        whyItMatters: "意味着远程安排已从课堂层面扩展到学校整体运营层面。",
-        nextAction: "观察后续是否出现更细化的人员分工、考勤或平台协同要求。",
-        ...spaRiyadhOnline
+        priority: "high",
+        featured: true,
+        tags: ["SDAIA", "Responsible AI", "征求意见", "AI治理"],
+        summary: "SPA 于 2026 年 4 月 2 日报道，SDAIA 向公众及政府、私营和非营利机构征求 Responsible AI Policy Draft 意见，强调要在创新与负责使用之间取得平衡，并通过持续风险评估和清晰责任划分来强化合规。",
+        whyItMatters: "这对教育科技公司尤其关键。未来 AI 教学助手、自动批改、学习分析等能力，不只是技术问题，也会被放进政府统一的 AI 治理框架里看待。",
+        nextAction: "把 Responsible AI、risk assessment、roles and responsibilities、trust in AI 等词加入常驻监测词库，后续一旦草案转正式文件，需要第一时间复核产品功能与数据处理方式。",
+        date: "2026-04-02",
+        platform: "政府通稿",
+        source: "SPA",
+        links: ["https://www.spa.gov.sa/en/N2551533"]
       },
       {
         id: 4,
-        title: "天气与气象预警仍是触发线上教学的重要外部变量",
-        category: "政策",
-        priority: "mid",
-        featured: false,
-        tags: ["气象中心", "安全", "教学连续性"],
-        summary: "决定依据国家气象中心报告作出，核心理由是保障安全并维持教学连续性。",
-        whyItMatters: "后续做 weekly 时，可把“气象—停课—线上”链路作为固定观察点。",
-        nextAction: "建立天气预警与教育部门通知的联动监测模板。",
-        ...spaRiyadhOnline
+        title: "SDAIA 专门提醒用户先验证网站与平台可靠性，再提交个人数据、证件与生物识别信息",
+        category: "行业",
+        priority: "high",
+        featured: true,
+        tags: ["数据保护", "平台可信", "biometrics", "用户信任"],
+        summary: "SPA 于 2026 年 4 月 5 日报道称，SDAIA 公开提醒公众在使用电子平台或网站服务前，应先确认其可靠性，再提交个人数据、证件与生物识别信息，以防止欺诈、身份盗用及数据被非法使用。",
+        whyItMatters: "这条虽然不是教育专门政策，但对所有在线教育出海平台都非常直接：如果平台要求上传证件、头像、语音、面部或其他敏感数据，用户信任与平台合规会变成监管和转化的共同问题。",
+        nextAction: "后续建议把“是否需要收集敏感数据、是否能证明平台官方身份、是否有阿语隐私说明”作为沙特版本产品审查的固定栏目。",
+        date: "2026-04-05",
+        platform: "政府通稿",
+        source: "SPA",
+        links: ["https://www.spa.gov.sa/en/N2553160"]
       },
       {
         id: 5,
-        title: "Tuwaiq Academy 与 Apple 合作开放新学术项目报名",
-        category: "政策",
+        title: "DGA 启动 2026 Digital Transformation Index，并新增 Website and Digital Content Efficiency 子指标",
+        category: "行业",
         priority: "high",
         featured: true,
-        tags: ["Tuwaiq Academy", "Apple", "技能培养"],
-        summary: "Tuwaiq Academy 宣布与 Apple 合作开放学术项目报名，聚焦技术技能和创新解决方案。",
-        whyItMatters: "属于政府支持的人才培养新动作，可作为教育数字化与科技教育结合的标志性案例。",
-        nextAction: "跟进招生人数、合作机制和后续是否有复制项目。",
-        ...spaTuwaiqApple
+        tags: ["DGA", "Digital Transformation Index", "网站内容效率", "数字政府"],
+        summary: "SPA 于 2026 年 4 月 15 日报道，Digital Government Authority 启动 Digital Transformation Index 2026，并引入 Website and Digital Content Efficiency Index 作为子指标，用于提升政府网站与数字内容质量管理。",
+        whyItMatters: "这条是很有用的大宏观信号。它说明沙特对数字内容、网站体验、信息质量的要求正在变成可衡量指标。对出海平台来说，网站与内容质量不只是市场问题，也越来越像合规与可信度问题。",
+        nextAction: "建议持续关注 DGA 对 Website and Digital Content Efficiency 的评估口径，后续可反向映射到我们自己的阿语官网、落地页、帮助中心与内容治理。",
+        date: "2026-04-15",
+        platform: "政府通稿",
+        source: "SPA",
+        links: ["https://www.spa.gov.sa/en/N2562888"]
       },
       {
         id: 6,
-        title: "项目时长为 9 个月，计划于 8 月在利雅得启动",
+        title: "NeLC 与 TVTC 统一私营部门 eLearning / training program 许可流程，FutureX 接入成为前置条件",
         category: "政策",
-        priority: "mid",
-        featured: false,
-        tags: ["项目周期", "利雅得", "学术项目"],
-        summary: "该项目将在利雅得实施，持续 9 个月，属于中长周期人才培养项目。",
-        whyItMatters: "相比短训营，这类长期项目更能体现官方对深度技能培训的投入。",
-        nextAction: "关注是否会外溢为更大范围的技术教育项目。",
-        ...spaTuwaiqApple
+        priority: "high",
+        featured: true,
+        tags: ["NeLC", "TVTC", "FutureX", "licensing"],
+        summary: "NeLC 于 2026 年 3 月 25 日宣布，与 TVTC 协调统一私营部门 eLearning 和 training program 许可流程。培训提供方将直接向 TVTC 申请项目许可，但前提是完成与 NeLC 系统通过 FutureX 的技术接入；新框架自 2026 年 5 月起生效。",
+        whyItMatters: "这说明沙特的在线教育/培训监管不再只是拿一张牌照，而是“牌照 + 技术接入 + 持续监管”一起看。对出海公司来说，技术接入能力会前置成准入条件。",
+        nextAction: "对任何潜在沙特合作或本地化落地项目，都建议先评估是否涉及 TVTC 许可、是否需要 FutureX 接入、以及产品形态更偏 education 还是 training。",
+        date: "2026-03-25",
+        platform: "政府官网",
+        source: "National eLearning Center",
+        links: ["https://nelc.gov.sa/en/media-center/news/unified-e-learning-licensing-private-sector-en"]
       },
       {
         id: 7,
-        title: "项目重点指向 AI 与 Apple 高级技术的结合应用",
-        category: "行业",
+        title: "NeLC 要求机构在 3 月 31 日前完成 FutureX 技术接入，未完成可导致牌照暂停或撤销",
+        category: "政策",
         priority: "high",
         featured: true,
-        tags: ["AI", "Apple 技术", "应用开发"],
-        summary: "公告明确项目聚焦人工智能与 Apple 高级技术结合下的应用开发与创新。",
-        whyItMatters: "这类课程方向对在线教育行业有借鉴意义，说明未来技能培养仍围绕 AI 和实用技术展开。",
-        nextAction: "补充观察沙特市场对 AI 技能培训、编程教育和项目制学习的需求变化。",
-        ...spaTuwaiqApple
+        tags: ["FutureX", "technical integration", "suspension", "license risk"],
+        summary: "NeLC 于 2026 年 2 月 18 日要求 Kingdom 内所有 eLearning 与 training providers 在 30 个工作日内完成与 FutureX 的技术接入，并明确指出未完成可能导致项目许可被暂停或撤销。",
+        whyItMatters: "这条把‘接入要求’从运营层面抬升为监管风险。对平台型公司而言，系统接口、数据格式和接入配合度，已经会直接影响是否能持续经营。",
+        nextAction: "后续如进入沙特市场，应把 FutureX / 本地平台接入准备放入前置清单，而不是等到商务合同签完后再补技术。",
+        date: "2026-02-18",
+        platform: "政府官网",
+        source: "National eLearning Center",
+        links: ["https://nelc.gov.sa/en/media-center/news/news-future-link"]
       },
       {
         id: 8,
-        title: "招生对象覆盖不同年龄层和多种专业背景",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["多年龄层", "跨专业", "普惠培养"],
-        summary: "项目并不局限于单一专业，而是面向多年龄层和不同背景人群开放。",
-        whyItMatters: "说明沙特技术教育正从垂直人群走向更普遍的人才覆盖。",
-        nextAction: "后续 weekly 可持续跟进“目标人群是否扩大”这一信号。",
-        ...spaTuwaiqApple
+        title: "SDAIA 启动面向全体本科生的数据与 AI 通识课程，AI 素养正在变成跨学科底座",
+        category: "政策",
+        priority: "high",
+        featured: true,
+        tags: ["SDAIA", "AI curriculum", "university", "cross-disciplinary"],
+        summary: "SPA 于 2026 年 1 月 30 日报道，SDAIA 推出 National Cross-Disciplinary Curriculum for University Students in Data and AI，面向所有学科本科生，帮助大学开发面向全体学生的数据与 AI 必修课程。",
+        whyItMatters: "这说明沙特对 AI 教育的期待已经从‘专业课程’上升为‘跨学科基础能力’。在线教育公司若要切入高校、培训或能力建设市场，产品叙事最好对齐 AI literacy、responsible use 和 labor market readiness。",
+        nextAction: "关注后续大学落地、必修课程实施、采购合作和内容标准化的进一步消息，判断是否会形成面向外部机构的合作机会。",
+        date: "2026-01-30",
+        platform: "政府通稿",
+        source: "SPA",
+        links: ["https://www.spa.gov.sa/en/N2501273"]
       },
       {
         id: 9,
-        title: "项目提供硬件支持、资金激励与项目转化机会",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["硬件资源", "资金激励", "项目转化"],
-        summary: "官方介绍中明确提到硬件支持、财务奖励以及项目转投资机会。",
-        whyItMatters: "这显示技能教育正与创新孵化、创业转化更紧密捆绑。",
-        nextAction: "跟踪是否出现公开成果、孵化案例或合作企业名单。",
-        ...spaTuwaiqApple
+        title: "GAFT 对来自中国等地的环氧树脂启动反倾销调查，贸易救济已进入持续动作阶段",
+        category: "政策",
+        priority: "high",
+        featured: true,
+        tags: ["GAFT", "China", "anti-dumping", "trade remedies"],
+        summary: "GAFT 于 2026 年 1 月 22 日宣布，对原产于或出口自中国、韩国、印度和中国台湾地区的环氧树脂发起反倾销调查。官方明确这是依据 2022 年发布的国际贸易救济法进行。",
+        whyItMatters: "虽然不是教育行业，但这是一个非常明确的政府视角案例：面向中国来源商品的监管与贸易救济在沙特是持续进行的，不是偶发事件。对于中国公司出海，合规与贸易环境都需要被纳入背景判断。",
+        nextAction: "建议把 GAFT 的 trade remedies 作为长期源池保留，凡涉及中国来源商品、技术设备或关键投入品，都要关注是否存在调查、最终措施或延续审查。",
+        date: "2026-01-22",
+        platform: "政府官网",
+        source: "GAFT",
+        links: ["https://gaft.gov.sa/en/lists/news/the-general-authority-of-foreign-trade-announces-the-initiation-of-an-anti-dumping-investigation-concerning-the-kingdom-s-imports-of-epoxy-resins-from-the-people-s-republic-of-china-republic-of-korea-republic-of-india-and-taiwan/"]
       },
       {
         id: 10,
-        title: "沙特化学队赴莫斯科参加 2026 门捷列夫国际化学奥赛",
-        category: "政策",
-        priority: "mid",
-        featured: false,
-        tags: ["国际竞赛", "化学奥赛", "学生培养"],
-        summary: "沙特化学队于 4 月 15 日至 23 日参加国际门捷列夫化学奥林匹克竞赛。",
-        whyItMatters: "国际学科竞赛仍是沙特高端人才培养的重要窗口。",
-        nextAction: "关注竞赛结果与官方后续宣传口径。",
-        ...spaChemistry
-      },
-      {
-        id: 11,
-        title: "该赛事被定义为全球历史最久、难度最高的化学赛事之一",
-        category: "行业",
-        priority: "low",
-        featured: false,
-        tags: ["高水平赛事", "学科能力", "国际标准"],
-        summary: "官方稿中强调该赛事历史悠久、题目难度高、竞争强度大。",
-        whyItMatters: "这类话术有助于判断沙特近期宣传更强调“高标准国际比较”。",
-        nextAction: "作为 weekly 背景信息保留，无需单独上升为风险或政策项。",
-        ...spaChemistry
-      },
-      {
-        id: 12,
-        title: "沙特自 2013 年起持续参赛，累计拿下 28 项国际奖项",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["长期投入", "国际奖项", "科研人才"],
-        summary: "稿件回顾称，沙特自 2013 年以来已在该项赛事中获得 28 项国际奖项。",
-        whyItMatters: "长期连续参赛与奖项积累，反映了官方对科学后备人才培养的持续投入。",
-        nextAction: "周报里可作为“人才体系连续性”类信号。",
-        ...spaChemistry
-      },
-      {
-        id: 13,
-        title: "官方强调全年训练营和理论实践结合的备赛体系",
-        category: "政策",
-        priority: "mid",
-        featured: false,
-        tags: ["训练营", "理论实践", "人才体系"],
-        summary: "官方特别强调参赛学生经过全年多阶段理论与实践训练营准备。",
-        whyItMatters: "这说明高水平竞赛并非一次性活动，而是建立在制度化训练机制之上。",
-        nextAction: "后续可继续追踪类似“全年训练—国际参赛”闭环机制。",
-        ...spaChemistry
-      },
-      {
-        id: 14,
-        title: "SPA 新闻培训学院启动媒体岗位毕业生赋能项目",
+        title: "GAFT 已对中国与中国台湾不锈钢焊管征收 5 年期最终反倾销税，税率最高达 27.3%",
         category: "政策",
         priority: "high",
         featured: true,
-        tags: ["就业赋能", "媒体培训", "毕业生"],
-        summary: "SPA 新闻培训学院联合 Hadaf 启动毕业生赋能项目，面向媒体岗位培养人才。",
-        whyItMatters: "这是近一周非常明确的人才培养政策信号，且与舆情监测、内容生产能力高度相关。",
-        nextAction: "建议纳入 weekly 的“官方能力建设”栏目。",
-        ...spaMediaGraduates
-      },
-      {
-        id: 15,
-        title: "项目首期覆盖超过 300 名学员",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["规模", "学员", "首期"],
-        summary: "首批项目学员超过 300 人，显示媒体人才培养具备一定规模。",
-        whyItMatters: "量级不算极大，但足以说明相关岗位能力建设进入制度化阶段。",
-        nextAction: "后续关注第二批、第三批扩容情况。",
-        ...spaMediaGraduates
-      },
-      {
-        id: 16,
-        title: "项目以 8 个专项媒体文凭为主要培养载体",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["文凭项目", "媒体课程", "职业导向"],
-        summary: "项目以 8 个专项媒体培训文凭展开，强调岗位导向型培养。",
-        whyItMatters: "这类项目值得作为“职业教育—内容产业”结合案例保留。",
-        nextAction: "检索是否公布具体文凭方向与课程设置。",
-        ...spaMediaGraduates
-      },
-      {
-        id: 17,
-        title: "学员来自 26 所本地和国际大学、覆盖 22 座城市",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["大学来源", "城市覆盖", "青年人才"],
-        summary: "稿件显示学员来源较广，体现项目覆盖面和跨区域吸引力。",
-        whyItMatters: "对 weekly 来说，这能反映政策并非只面向利雅得单点，而是全国性吸附人才。",
-        nextAction: "保留为项目覆盖度指标。",
-        ...spaMediaGraduates
-      },
-      {
-        id: 18,
-        title: "项目周期 12 个月，定位为长期能力建设而非短期培训",
-        category: "政策",
-        priority: "mid",
-        featured: false,
-        tags: ["12个月", "长期培养", "人力资本"],
-        summary: "官方明确此为 12 个月项目，强调持续培养与竞争力提升。",
-        whyItMatters: "相比短平快项目，这类设置更值得纳入中长期能力建设观察。",
-        nextAction: "观察是否与就业吸纳、转岗率等结果挂钩。",
-        ...spaMediaGraduates
-      },
-      {
-        id: 19,
-        title: "MCIT 见证 True Nexus 与 Pasqal 签署量子计算合作",
-        category: "政策",
-        priority: "mid",
-        featured: false,
-        tags: ["MCIT", "量子计算", "前沿技术"],
-        summary: "MCIT 见证双方围绕中性原子量子计算在食品蛋白功能设计上的合作签署。",
-        whyItMatters: "虽然不直接属于教育政策，但可作为沙特前沿技术能力建设的重要背景信息。",
-        nextAction: "作为科技教育和未来技能的大环境信息纳入观察。",
-        ...spaQuantum
-      },
-      {
-        id: 20,
-        title: "官方将该合作定义为全球首创路径之一",
-        category: "行业",
-        priority: "low",
-        featured: false,
-        tags: ["全球首创", "科研应用", "创新叙事"],
-        summary: "官方稿特别强调这是全球首创路径之一，突出沙特抢占前沿技术叙事。",
-        whyItMatters: "周报中可作为“国家创新叙事增强”的旁证。",
-        nextAction: "观察是否有高校、训练项目或人才计划跟进。",
-        ...spaQuantum
-      },
-      {
-        id: 21,
-        title: "量子与 AI 被继续绑定到国家战略产业叙事中",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["AI", "量子", "战略产业"],
-        summary: "稿件将量子计算与 AI 一并置于国家前沿技术和产业升级话语中。",
-        whyItMatters: "对教育与在线学习行业来说，这意味着未来技能类内容仍有政策顺风。",
-        nextAction: "后续检索更多“AI+教育”“量子+人才”类交叉信号。",
-        ...spaQuantum
-      },
-      {
-        id: 22,
-        title: "沙特结束 2026 博洛尼亚国际童书展参展活动",
-        category: "政策",
-        priority: "mid",
-        featured: false,
-        tags: ["童书展", "国际传播", "阅读生态"],
-        summary: "沙特完成对 2026 年博洛尼亚国际童书展的集中参展，突出儿童和青少年文学。",
-        whyItMatters: "这类文化教育外展能辅助判断内容、出版和儿童教育生态的官方重视方向。",
-        nextAction: "可与青少年阅读、双语内容、教育出版趋势并列观察。",
-        ...spaBologna
-      },
-      {
-        id: 23,
-        title: "官方强调儿童与青少年文学是重点国际展示方向",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["儿童文学", "青少年内容", "出版"],
-        summary: "稿件特别点出童书展是儿童与青少年文学的重要国际平台。",
-        whyItMatters: "对教育内容和青少年受众产品来说，这是值得关注的内容生态风向。",
-        nextAction: "后续跟踪沙特儿童教育内容、阅读平台、出版社合作机会。",
-        ...spaBologna
-      },
-      {
-        id: 24,
-        title: "配套文化项目覆盖翻译、叙事与哲学议题",
-        category: "行业",
-        priority: "low",
-        featured: false,
-        tags: ["翻译", "叙事", "哲学"],
-        summary: "参展配套活动围绕翻译、叙事和哲学展开，内容并非单纯商业展示。",
-        whyItMatters: "对 weekly 来说，这是“内容质量与思想性并重”的辅助信号。",
-        nextAction: "记录为儿童与青少年内容领域的软性趋势。",
-        ...spaBologna
-      },
-      {
-        id: 25,
-        title: "展台集成图书馆、公共阅读与阿语机构资源",
-        category: "政策",
-        priority: "low",
-        featured: false,
-        tags: ["机构协同", "图书馆", "阿语资源"],
-        summary: "参展方包括国家图书馆、公共图书馆和阿语机构，体现跨机构协同。",
-        whyItMatters: "这种资源协同结构适合放入 weekly 的“国家内容生态”观察中。",
-        nextAction: "关注后续是否有更具体的国际合作成果。",
-        ...spaBologna
-      },
-      {
-        id: 26,
-        title: "沙特媒体学院完成“国家安全与信息力量”强化训练",
-        category: "政策",
-        priority: "high",
-        featured: true,
-        tags: ["媒体学院", "国家安全", "信息能力"],
-        summary: "沙特媒体学院与国防大学合作完成信息力量专项培训。",
-        whyItMatters: "这和舆情、信息管理、对外传播能力建设高度相关，建议列入重点。",
-        nextAction: "纳入 weekly 的“政府对信息传播能力建设”主线。",
-        ...spaMediaAcademy
-      },
-      {
-        id: 27,
-        title: "培训为期两天，面向 25 名媒体与传播专业人员",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["两天集训", "传播专业人员", "小班化"],
-        summary: "项目采用小规模高强度方式，聚焦媒体与传播从业者。",
-        whyItMatters: "这说明官方训练更偏精英化、专项化而非大规模普及。",
-        nextAction: "继续搜集类似专项集训项目，判断是否形成系列。",
-        ...spaMediaAcademy
-      },
-      {
-        id: 28,
-        title: "课程强调战略环境分析与信息处理能力",
-        category: "政策",
-        priority: "mid",
-        featured: false,
-        tags: ["战略环境", "信息处理", "能力模型"],
-        summary: "课程重点之一是战略环境分析和职业化信息处理能力。",
-        whyItMatters: "对政府舆情和传播团队来说，这就是非常直接的能力建设信号。",
-        nextAction: "可据此调整你们 weekly 的分析维度和呈现方式。",
-        ...spaMediaAcademy
-      },
-      {
-        id: 29,
-        title: "官方强调构建“准确媒体信息”的输出能力",
-        category: "政策",
-        priority: "high",
-        featured: true,
-        tags: ["准确表述", "官方传播", "信息安全"],
-        summary: "稿件明确提出要提升与国家安全和战略利益相关议题的准确媒体表达能力。",
-        whyItMatters: "这说明官方对信息口径、叙事精准度的要求正在上升。",
-        nextAction: "建议把“表述是否准确”“是否过度解读”加入 weekly 复盘标准。",
-        ...spaMediaAcademy
-      },
-      {
-        id: 30,
-        title: "Ithra 开放第五届青年暑期项目报名",
-        category: "政策",
-        priority: "mid",
-        featured: false,
-        tags: ["Ithra", "青年项目", "报名开放"],
-        summary: "Ithra 于 4 月 16 日开放第五届青年暑期项目报名，报名持续到 6 月底。",
-        whyItMatters: "属于官方支持的青年培养和文化教育项目，可作为人才培养类信号。",
-        nextAction: "跟进报名热度和后续项目执行情况。",
-        ...spaIthra
-      },
-      {
-        id: 31,
-        title: "项目面向 13 至 16 岁青少年",
-        category: "行业",
-        priority: "low",
-        featured: false,
-        tags: ["青少年", "13-16岁", "培养对象"],
-        summary: "项目明确聚焦 13 至 16 岁群体，属于较早阶段的人才启蒙项目。",
-        whyItMatters: "说明青少年阶段的能力与兴趣培养仍是机构投入重点。",
-        nextAction: "记录为 youth segment 的长期观察样本。",
-        ...spaIthra
-      },
-      {
-        id: 32,
-        title: "项目内容强调文化与创意产业的沉浸式体验",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["创意产业", "沉浸式", "文化教育"],
-        summary: "官方定位并非单纯夏令营，而是让青少年进入文化与创意产业场景。",
-        whyItMatters: "对教育内容行业来说，这类项目说明“体验式学习”仍具政策友好度。",
-        nextAction: "后续关注是否有数字内容、创作工具或线上协同模块加入。",
-        ...spaIthra
-      },
-      {
-        id: 33,
-        title: "暑期项目将在 7 月至 8 月进行，为期四周",
-        category: "行业",
-        priority: "low",
-        featured: false,
-        tags: ["时间安排", "四周", "暑期项目"],
-        summary: "项目将在 7 月 13 日至 8 月 6 日运行，时间安排较明确。",
-        whyItMatters: "适合放在 weekly 中作为节奏型信息，帮助判断暑期教育活动密度。",
-        nextAction: "整理后续同类暑期项目，形成夏季活动时间轴。",
-        ...spaIthra
-      },
-      {
-        id: 34,
-        title: "项目最终设置青年手工艺成果展作为输出环节",
-        category: "行业",
-        priority: "low",
-        featured: false,
-        tags: ["成果展", "项目输出", "学习闭环"],
-        summary: "项目最后将以青年工艺展呈现成果，强调可视化输出。",
-        whyItMatters: "这类“学习—创作—展出”闭环值得作为内容产品设计参考。",
-        nextAction: "关注是否同步线上展示或数字传播版本。",
-        ...spaIthra
-      },
-      {
-        id: 35,
-        title: "Ithra 累计交付超过 18,000 学习小时",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["学习小时", "长期投入", "项目累计"],
-        summary: "官方回顾称，该项目体系累计提供了超过 18,000 小时学习内容。",
-        whyItMatters: "这为判断项目长期投入和规模提供了量化参考。",
-        nextAction: "保留为项目体量对比指标。",
-        ...spaIthra
-      },
-      {
-        id: 36,
-        title: "沙特在 Stanford 2026 AI Index 中位列 AI 安全隐私与密码学全球第一",
-        category: "政策",
-        priority: "high",
-        featured: true,
-        tags: ["AI Index", "安全隐私", "全球第一"],
-        summary: "官方与媒体均强调，沙特在 AI 安全、隐私、密码学指标上居全球首位。",
-        whyItMatters: "这是近一周非常强的国家能力叙事，对教育、技能培训和 AI 产业都有影响。",
-        nextAction: "在 weekly 中作为宏观背景置顶展示。",
-        ...spaStanford
-      },
-      {
-        id: 37,
-        title: "沙特在 AI 女性赋权指标中同样排名全球第一",
-        category: "政策",
-        priority: "high",
-        featured: true,
-        tags: ["女性赋权", "AI 人才", "国际排名"],
-        summary: "报道指出沙特在 AI 女性赋权方面同样排名世界第一。",
-        whyItMatters: "这类排名有助于官方强化包容性与人才吸引叙事。",
-        nextAction: "后续跟进是否出现更多女性科技人才项目和奖学金计划。",
-        ...spaStanford
-      },
-      {
-        id: 38,
-        title: "大学生使用生成式 AI 学习的占比变化排名全球第三",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["生成式AI", "大学生", "学习行为"],
-        summary: "相关报道提到，沙特大学生在学习中使用生成式 AI 的占比变化居全球前列。",
-        whyItMatters: "这是教育行业尤其在线学习与工具产品的重要需求侧信号。",
-        nextAction: "可据此增加 weekly 对学生端 AI 工具使用趋势的观察。",
-        ...spaStanford
-      },
-      {
-        id: 39,
-        title: "AI 人才集中度变化排名全球第三，人才吸引力排名全球第四",
-        category: "行业",
-        priority: "mid",
-        featured: false,
-        tags: ["AI 人才", "人才吸引", "国际比较"],
-        summary: "报道同时强调 AI 人才集中度变化和人才吸引力的全球领先位置。",
-        whyItMatters: "说明教育、培训和人才市场形成相互强化效应。",
-        nextAction: "把这类人才指标纳入每周宏观环境板块。",
-        ...spaStanford
-      },
-      {
-        id: 40,
-        title: "媒体将该排名解读为沙特 AI 教育和技能体系加速成熟",
-        category: "媒体",
-        priority: "mid",
-        featured: false,
-        tags: ["媒体解读", "AI 教育", "技能体系"],
-        summary: "Arab News 将该组排名与沙特教育、人才和数字化生态发展联系起来进行解读。",
-        whyItMatters: "相比官方稿，媒体稿能补足外部认知视角，适合放在“舆情/媒体怎么看”栏目。",
-        nextAction: "持续检索国际媒体对沙特教育与 AI 能力建设的外部表述。",
-        ...spaStanford
-      },
-      {
-        id: 41,
-        title: "Saudi Gazette 报道称多个地区因暴雨暂停线下课",
-        category: "媒体",
-        priority: "mid",
-        featured: false,
-        tags: ["Saudi Gazette", "暴雨停课", "远程教学"],
-        summary: "Saudi Gazette 报道多个地区因暴雨停课，并切换为远程教学。",
-        whyItMatters: "媒体视角强化了官方信号，说明线上教学在突发情况下已具备社会接受度。",
-        nextAction: "对比官方稿与媒体稿在措辞上的差异。",
-        ...saudiGazetteWeather
-      },
-      {
-        id: 42,
-        title: "媒体明确点名 Madrasati 为远程教学承接平台",
-        category: "媒体",
-        priority: "mid",
-        featured: false,
-        tags: ["Madrasati", "平台承接", "媒体观察"],
-        summary: "媒体在报道中直接指出 Madrasati 承担了停课后的远程教学任务。",
-        whyItMatters: "这说明平台认知已被社会媒体广泛接受，平台品牌本身具备公共教育属性。",
-        nextAction: "weekly 可固定跟踪平台被提及频次。",
-        ...saudiGazetteWeather
-      },
-      {
-        id: 43,
-        title: "媒体还提到多所大学同步切换线上安排",
-        category: "媒体",
-        priority: "mid",
-        featured: false,
-        tags: ["大学", "线上切换", "教学连续性"],
-        summary: "报道不仅覆盖中小学，还提到多所大学同步采取线上安排。",
-        whyItMatters: "说明线上教学并非只发生在基础教育，大学端同样保有快速切换能力。",
-        nextAction: "后续补充高校端的远程教学案例。",
-        ...saudiGazetteWeather
-      },
-      {
-        id: 44,
-        title: "媒体强调安全、连续性与组织效率是停课转线上三大理由",
-        category: "媒体",
-        priority: "low",
-        featured: false,
-        tags: ["安全", "连续性", "组织效率"],
-        summary: "从媒体口径看，远程教学不再只为补位，而被表述为兼顾安全和效率的标准工具。",
-        whyItMatters: "有助于把 weekly 的“线上教育”从技术话题拉回公共治理话题。",
-        nextAction: "继续搜集类似媒体叙事是否稳定出现。",
-        ...saudiGazetteWeather
-      },
-      {
-        id: 45,
-        title: "行业媒体称在线学校在不确定时期的“连续性价值”正在被重新认识",
-        category: "媒体",
-        priority: "mid",
-        featured: false,
-        tags: ["在线学校", "连续性", "家长认知"],
-        summary: "Education UAE 文章指出，地缘不确定性抬升了家庭对在线学校“保持教学连续性”的重视。",
-        whyItMatters: "这属于在线教育行业的舆情风向，对中东市场尤其有参考价值。",
-        nextAction: "可将此类外部观点补充到 weekly 的行业观点区。",
-        ...minervaContinuity
-      },
-      {
-        id: 46,
-        title: "文章认为在线教育不再只是灵活备选，而是可靠方案",
-        category: "媒体",
-        priority: "mid",
-        featured: false,
-        tags: ["在线教育", "可靠方案", "行业观点"],
-        summary: "文章明确提出，在线学习在当前区域环境下已不只是替代方案，而是稳定方案。",
-        whyItMatters: "这类表达能反映外界对在线教育认知的升级。",
-        nextAction: "后续持续监测“alternative”向“reliable solution”的话术变化。",
-        ...minervaContinuity
-      },
-      {
-        id: 47,
-        title: "媒体特别强调家长对“结构化线上学习”和心理支持的需求",
-        category: "媒体",
-        priority: "low",
-        featured: false,
-        tags: ["家长需求", "结构化学习", "心理支持"],
-        summary: "文章把在线学校的价值归结为结构化课程、稳定节奏和一对一支持。",
-        whyItMatters: "这类需求侧表述对在线教育产品设计和内容表达有现实借鉴意义。",
-        nextAction: "周报可增加“家长真正关注什么”的独立小栏。",
-        ...minervaContinuity
-      },
-      {
-        id: 48,
-        title: "Arab News 关注沙特在 UNESCO 场合强调“教育促进和平”",
-        category: "媒体",
-        priority: "low",
-        featured: false,
-        tags: ["UNESCO", "教育促进和平", "国际表达"],
-        summary: "Arab News 报道沙特在 UNESCO 场合强调教育、包容、共处和全球公民叙事。",
-        whyItMatters: "虽然不是直接的在线教育政策，但属于官方教育价值观的国际表述。",
-        nextAction: "保留为宏观舆论背景，不必在 weekly 中占太大篇幅。",
-        ...arabNewsPeace
-      },
-      {
-        id: 49,
-        title: "Arab News 报道教育类 POS 支出一周暴增 797.5%",
-        category: "媒体",
-        priority: "mid",
-        featured: false,
-        tags: ["教育消费", "POS", "支出增长"],
-        summary: "Arab News 援引央行数据称，教育类刷卡支出在一周内大幅增长。",
-        whyItMatters: "这为 weekly 提供了教育消费侧的补充视角，可辅助判断市场活跃度。",
-        nextAction: "后续如果能找到更细分的培训、K12 或高教消费结构会更有价值。",
-        ...arabNewsPos
-      },
-      {
-        id: 50,
-        title: "本周综合判断：官方更强调平台治理、技能培养与教育连续性",
-        category: "政策",
-        priority: "high",
-        featured: true,
-        tags: ["综合判断", "平台治理", "技能培养"],
-        summary: "把近一周官方与媒体信号合在一起看，核心主题集中在应急线上教学、AI/技能培养、青年项目和内容能力建设。",
-        whyItMatters: "快速抓住主线。",
-        nextAction: "下周继续沿着“线上教学机制、AI 教育、青年能力建设、信息传播能力”四条线索更新。",
-        date: "2026-04-22",
-        platform: "汇总研判",
-        source: "Codex based on official and media sources",
-        links: [
-          "https://www.spa.gov.sa/en/N2566507",
-          "https://www.spa.gov.sa/en/N2565918",
-          "https://www.spa.gov.sa/en/N2565222",
-          "https://www.spa.gov.sa/en/N2559779"
-        ]
-      },
-      {
-        id: 51,
-        title: "51Talk 沙特账号预告在 Saudi TV《طويق》节目中亮相",
-        date: "2026-04-20",
-        category: "媒体",
-        platform: "X",
-        source: "51Talk KSA",
-        priority: "high",
-        featured: true,
-        tags: ["Saudi TV", "品牌曝光", "电视节目"],
-        summary: "51Talk 沙特官方账号转发 Saudi TV 节目预告，强调平台将作为案例出现在《طويق》节目中。",
-        whyItMatters: "这是品牌进入本地主流媒体叙事的明显信号，适合放进 weekly 的“品牌外部曝光”板块。",
-        nextAction: "后续补看节目内容，判断 TV 露出是偏品牌故事、课程卖点还是政策/行业定位。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 52,
-        title: "Saudi TV 将 51Talk 定义为“重新定义儿童英语学习体验”的平台",
-        date: "2026-04-20",
-        category: "媒体",
-        platform: "X",
-        source: "Saudi TV / 51Talk KSA",
-        priority: "high",
-        featured: true,
-        tags: ["儿童英语", "品牌定位", "外部表述"],
-        summary: "节目文案将 51Talk 描述为把英语学习从单纯知识灌输转向建立沟通与自信的学习体验。",
-        whyItMatters: "这种媒体表述比品牌自述更有参考价值，能看出外部如何理解 51Talk 的核心卖点。",
-        nextAction: "建议把“沟通、自信、体验式学习”纳入后续 weekly 的品牌关键词监测。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 53,
-        title: "节目内容强调“学习者是体验中心，而不只是围绕课程本身”",
-        date: "2026-04-20",
-        category: "媒体",
-        platform: "X",
-        source: "Saudi TV / 51Talk KSA",
-        priority: "mid",
-        featured: false,
-        tags: ["学习者中心", "产品叙事", "课程体验"],
-        summary: "节目口径特别提到，平台区别之一在于把学习者而非教材本身放在中心位置。",
-        whyItMatters: "这类表述和在线教育行业的产品设计逻辑直接相关，值得做长期追踪。",
-        nextAction: "后续可和竞品对比，看谁更多强调“课程”，谁更多强调“用户体验”。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 54,
-        title: "节目中还出现“从儿童需求出发，项目逐步扩展到成人”表述",
-        date: "2026-04-20",
-        category: "行业",
-        platform: "X",
-        source: "Saudi TV / 51Talk KSA",
-        priority: "mid",
-        featured: false,
-        tags: ["儿童到成人", "产品扩展", "人群拓展"],
-        summary: "节目相关话术显示，品牌最初围绕儿童需求建立，随后逐步扩展至成人英语学习场景。",
-        whyItMatters: "这说明 51Talk 在沙特的受众叙事正在变宽，不再只锁定低龄家庭。",
-        nextAction: "建议 weekly 单独观察“儿童 / 成人”双人群口径是否进一步分化。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 55,
-        title: "51Talk KSA 官方账号同步转发节目内容，强化‘语言赋能未来’叙事",
-        date: "2026-04-20",
-        category: "媒体",
-        platform: "X",
-        source: "51Talk KSA",
-        priority: "mid",
-        featured: false,
-        tags: ["语言赋能", "品牌转发", "主张强化"],
-        summary: "官方转发中强调“今天让孩子掌握英语，就是在为未来投资”，强化长期价值叙事。",
-        whyItMatters: "说明品牌传播并不只围绕功能卖点，也在做面向家长的价值型叙事。",
-        nextAction: "后续监测同类文案在家长社群或评论区的反馈。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 56,
-        title: "51Talk 宣布在利雅得 Qasr Mall 开设第二家线下门店",
-        date: "2026-04-21",
-        category: "行业",
-        platform: "X",
-        source: "51Talk KSA",
-        priority: "high",
-        featured: true,
-        tags: ["Qasr Mall", "线下门店", "利雅得"],
-        summary: "官方账号发布新门店开业预告，显示 51Talk 在利雅得推进第二个线下触点。",
-        whyItMatters: "这是非常明确的本地化扩张信号，说明品牌正在从纯线上向“线上 + 线下触点”延展。",
-        nextAction: "建议 weekly 增设“线下动作”栏目，跟踪门店、商场活动和城市扩张节奏。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 57,
-        title: "新门店开业与 Saudi Founding Day 节点绑定，带有明显节日营销属性",
-        date: "2026-04-21",
-        category: "媒体",
-        platform: "X",
-        source: "51Talk KSA",
-        priority: "mid",
-        featured: false,
-        tags: ["节日营销", "Founding Day", "商场活动"],
-        summary: "新店开业文案与 Founding Day 叙事绑定，形成“节日情绪 + 开业活动”的组合传播。",
-        whyItMatters: "说明品牌在本地文化节点上的内容适配能力在增强。",
-        nextAction: "后续关注是否会在斋月、返校季、国庆等节点持续复制此类打法。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 58,
-        title: "线下活动明确设置到店时段与现场互动，强调即时到店转化",
-        date: "2026-04-21",
-        category: "行业",
-        platform: "X",
-        source: "51Talk KSA",
-        priority: "mid",
-        featured: false,
-        tags: ["到店转化", "活动时段", "线索收集"],
-        summary: "账号多次发布具体到店时间和地点，显示活动设计偏向即时引流与线索沉淀。",
-        whyItMatters: "这类线下动作对线上教育品牌很关键，说明其获客方式并不只依赖数字广告。",
-        nextAction: "weekly 可加入“线上教育线下化获客”观察点。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 59,
-        title: "51Talk 在 X 上持续预热‘فوازير فايف ون توك’互动直播",
-        date: "2026-04-22",
-        category: "媒体",
-        platform: "X",
-        source: "51Talk KSA",
-        priority: "mid",
-        featured: false,
-        tags: ["直播互动", "活动预热", "多平台联动"],
-        summary: "账号连续预热“51Talk 谜题/竞猜”直播活动，并强调将同时在 YouTube、TikTok、Instagram 分发。",
-        whyItMatters: "说明品牌正在尝试用直播和轻互动内容提升社媒活跃度。",
-        nextAction: "后续跟踪互动数据，看是品牌曝光型活动还是有效获客型活动。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 60,
-        title: "直播活动采用“免费试听 + 抽奖”组合打法",
-        date: "2026-04-19",
-        category: "行业",
-        platform: "X",
-        source: "51Talk KSA",
-        priority: "mid",
-        featured: false,
-        tags: ["免费试听", "抽奖", "获客漏斗"],
-        summary: "活动文案中把免费试听和抽奖权益组合到一起，形成典型的低门槛转化入口。",
-        whyItMatters: "这反映出 51Talk 在沙特仍以试课为核心转化机制，并在活动中叠加激励。",
-        nextAction: "观察是否长期使用“免费试听 + 奖品”作为标准获客组合。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 61,
-        title: "官方账号最新公开数据约为 15K 粉丝、952 条推文",
-        date: "2026-04-22",
-        category: "行业",
-        platform: "X",
-        source: "TwStalker",
-        priority: "low",
-        featured: false,
-        tags: ["账号体量", "粉丝数", "内容密度"],
-        summary: "TwStalker 页面显示账号约有 1.5 万粉丝和 952 条内容，具备持续运营基础。",
-        whyItMatters: "这可作为后续 weekly 做账号体量变化的基线。",
-        nextAction: "建议后续按月记录粉丝与发帖数变化，形成最简运营基准线。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 62,
-        title: "官方公开回复承认‘付款前后服务体验落差’问题",
-        date: "2026-04-20",
-        category: "媒体",
-        platform: "X",
-        source: "51Talk KSA",
-        priority: "high",
-        featured: true,
-        tags: ["用户投诉", "售后体验", "公开致歉"],
-        summary: "在一条公开回复中，官方直接承认用户感知到付款前后服务体验变化，并表示承担责任。",
-        whyItMatters: "这类公开承认型回复风险不高但信号很强，极适合进入 weekly 风险栏。",
-        nextAction: "建议后续补内部核实状态：是否属于个案、是否已有专项整改。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 63,
-        title: "回复中明确给出 WhatsApp 和热线电话作为售后入口",
-        date: "2026-04-20",
-        category: "行业",
-        platform: "X",
-        source: "51Talk KSA",
-        priority: "mid",
-        featured: false,
-        tags: ["客服通道", "WhatsApp", "热线"],
-        summary: "官方在回复中留下 WhatsApp 和热线电话，体现其售后解决仍依赖人工客服链路。",
-        whyItMatters: "这说明社媒公开回复的目标仍是导流到私域客服，而非在公开场域完成闭环。",
-        nextAction: "weekly 可记录“公开投诉—私域解决”的标准路径是否稳定。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 64,
-        title: "多条模板化致歉回复显示账号正在集中处理同类投诉",
-        date: "2026-04-19",
-        category: "媒体",
-        platform: "X",
-        source: "51Talk KSA",
-        priority: "mid",
-        featured: false,
-        tags: ["模板回复", "集中处理", "投诉聚集"],
-        summary: "页面中可见多条高度相似的回复，说明账号在集中处理服务争议或误解。",
-        whyItMatters: "即使量不大，也意味着客服问题并非完全孤立个案。",
-        nextAction: "建议后续统计模板回复频率，看是否形成周期性问题。",
-        links: ["https://www.twstalker.com/51talk_ksa"]
-      },
-      {
-        id: 65,
-        title: "Digital Marketing Specialist 岗位要求管理 Google、Meta、TikTok 投放",
-        date: "2026-03-22",
-        category: "行业",
-        platform: "LinkedIn",
-        source: "51Talk 招聘页",
-        priority: "high",
-        featured: true,
-        tags: ["数字投放", "Google Ads", "TikTok"],
-        summary: "利雅得数字营销岗位要求直接负责 Google Ads、Meta 与 TikTok 等投放渠道。",
-        whyItMatters: "说明 51Talk 沙特投放并不是单点渠道，而是标准化的多平台广告体系。",
-        nextAction: "后续可把“渠道矩阵”纳入对 51Talk 品牌动作的观察。",
-        links: ["https://www.linkedin.com/jobs/view/4379549645/"]
-      },
-      {
-        id: 66,
-        title: "岗位强调 CPL、CPA、CTR、转化率等效果指标",
-        date: "2026-03-22",
-        category: "行业",
-        platform: "LinkedIn",
-        source: "51Talk 招聘页",
-        priority: "mid",
-        featured: false,
-        tags: ["效果营销", "ROI", "转化率"],
-        summary: "招聘需求中明确要求围绕 CPL、CPA、CTR、转化率和获客成本展开效果优化。",
-        whyItMatters: "这说明品牌在 KSA 市场的投放逻辑更偏 performance marketing，而不是纯品牌广告。",
-        nextAction: "weekly 中可把 51Talk 归为“强转化导向型在线教育品牌”。",
-        links: ["https://www.linkedin.com/jobs/view/4379549645/"]
-      },
-      {
-        id: 67,
-        title: "数字营销岗位要求阿拉伯语和英语双语能力",
-        date: "2026-03-22",
-        category: "行业",
-        platform: "LinkedIn",
-        source: "51Talk 招聘页",
-        priority: "mid",
-        featured: false,
-        tags: ["双语能力", "本地化", "阿语内容"],
-        summary: "岗位明确要求英语与阿拉伯语流利，显示本地化运营已进入细分执行层。",
-        whyItMatters: "这能侧面证明 51Talk 对本地语言内容与双语投放有较高依赖。",
-        nextAction: "后续观察其公开内容中阿语/英语的占比变化。",
-        links: ["https://www.linkedin.com/jobs/view/4379549645/"]
-      },
-      {
-        id: 68,
-        title: "Social Media Marketing Specialist 岗位强调官方账号矩阵与粉丝增长",
-        date: "2026-02-22",
-        category: "行业",
-        platform: "LinkedIn",
-        source: "51Talk 招聘页",
-        priority: "mid",
-        featured: false,
-        tags: ["社媒矩阵", "粉丝增长", "账号运营"],
-        summary: "社媒岗位职责包括多账号矩阵运营、内容规划发布和用户增长。",
-        whyItMatters: "这说明 51Talk 在沙特不是单账号单平台打法，而是矩阵化内容运营。",
-        nextAction: "weekly 里可补充‘品牌是否形成稳定矩阵’这一分析角度。",
-        links: ["https://www.linkedin.com/jobs/view/4348843523/"]
-      },
-      {
-        id: 69,
-        title: "同一岗位还设置 ESL 直播老师角色，目标包含 Leads 转化",
-        date: "2026-02-22",
-        category: "行业",
-        platform: "LinkedIn",
-        source: "51Talk 招聘页",
-        priority: "high",
-        featured: true,
-        tags: ["直播老师", "Lead 转化", "软转化"],
-        summary: "招聘页把直播老师职责定义为通过专业英语互动建立信任，并软性引导用户留下线索。",
-        whyItMatters: "这是很强的业务信号，说明 51Talk 在中东把直播内容直接接到了转化漏斗上。",
-        nextAction: "建议后续重点监测其直播活动与试课领取链路。",
-        links: ["https://www.linkedin.com/jobs/view/4348843523/"]
-      },
-      {
-        id: 70,
-        title: "Influencer Marketing Specialist 岗位显示 51Talk 正重点面向 KSA 成年英语学习者做 KOL 传播",
-        date: "2026-04-08",
-        category: "行业",
-        platform: "LinkedIn",
-        source: "51Talk 招聘页",
-        priority: "high",
-        featured: true,
-        tags: ["KOL", "成人英语", "影响者营销"],
-        summary: "近两周公开岗位显示，51Talk 在利雅得招聘 Influencer Marketing Specialist，目标人群明确写到 KSA 成年英语学习者。",
-        whyItMatters: "这证明其沙特品牌动作正在从儿童英语进一步延伸到成人市场，并通过 KOL 加速渗透。",
-        nextAction: "建议在页面里后续再加一层标签：儿童 / 成人 / 家长 / 教育社区。",
-        links: ["https://sa.linkedin.com/jobs/view/influencer-marketing-specialist-at-51talk-4366993673"]
-      },
-      {
-        id: 71,
-        title: "Glassdoor 4 月 14 日新评提到 VIPKid“工作轻、备课少”，但同时指出“近期薪酬下降”",
-        date: "2026-04-14",
-        category: "媒体",
-        platform: "评论聚合",
-        source: "Glassdoor",
-        priority: "mid",
-        featured: false,
-        tags: ["VIPKid", "Glassdoor", "薪酬"],
-        summary: "Glassdoor 4 月 14 日公开评论将 VIPKid 描述为“上手容易、几乎不需要准备”，但负面点明确写到“近期薪酬下降”。",
-        whyItMatters: "可作为近三个月外部口碑样本之一。",
-        nextAction: "可继续观察后续评论里薪酬与工作量是否仍是高频问题。",
-        links: ["https://www.glassdoor.com/Reviews/VIPKid-Reviews-E1105111.htm"]
-      },
-      {
-        id: 72,
-        title: "Glassdoor 4 月 9 日新评提到 VIPKid“远程工作体验好”，但认为“任务量不足，不太值得投入”",
-        date: "2026-04-09",
-        category: "媒体",
-        platform: "评论聚合",
-        source: "Glassdoor",
-        priority: "mid",
-        featured: false,
-        tags: ["VIPKid", "Glassdoor", "工作量"],
-        summary: "Glassdoor 4 月 9 日公开评论肯定了远程工作和学生体验，但给出的主要负面意见是“任务量不足，不值得投入”。",
-        whyItMatters: "可作为近三个月教师端公开评价样本之一。",
-        nextAction: "后续若继续跟踪 VIPKid，可重点看‘收入稳定性’与‘课量’相关评论。",
-        links: ["https://www.glassdoor.com/Reviews/VIPKid-Reviews-E1105111.htm"]
-      },
-      {
-        id: 73,
-        title: "Business Insider 4 月 13 日报道：Duolingo CEO 解释公司为何撤回“把 AI 使用写进绩效考核”的做法",
-        date: "2026-04-13",
-        category: "媒体",
-        platform: "新闻媒体",
-        source: "Business Insider",
-        priority: "high",
-        featured: true,
-        tags: ["Duolingo", "Business Insider", "AI-first"],
-        summary: "Business Insider 报道称，Duolingo CEO 在 4 月 10 日播客中解释，公司已撤回此前把 AI 使用写入绩效评估的做法，因为员工担心这会变成“为了 AI 而 AI”。",
-        whyItMatters: "这是近三个月里较有代表性的第三方媒体报道，能反映外界如何看待 Duolingo 的 AI 管理争议。",
-        nextAction: "后续可继续观察媒体是否把 Duolingo 视为教育产品公司推进 AI 管理的标志性案例。",
-        links: ["https://www.businessinsider.com/duolingo-ai-performance-reviews-ceo-backtracked-2026-4"]
+        tags: ["GAFT", "China", "final duties", "customs"],
+        summary: "GAFT 于 2025 年 6 月 29 日宣布，对原产于或出口自中国和中国台湾地区的不锈钢焊管征收最终反倾销税，2025 年 6 月 30 日起执行 5 年，税率区间为 6.5% 至 27.3%。",
+        whyItMatters: "这是一条已经落地执行的中国相关监管样本。虽然不是教育产品本身，但它说明中国主体进入沙特市场时，必须把贸易救济、海关征收与本地产业保护放进整体风险图谱。",
+        nextAction: "建议后续把‘中国—沙特—监管/反倾销/海关’作为独立专题维护，和教育政策线并行，便于管理层同时看行业机会与中国主体风险环境。",
+        date: "2025-06-29",
+        platform: "政府官网",
+        source: "GAFT",
+        links: ["https://gaft.gov.sa/en/lists/news/gaft-announces-final-anti-dumping-duties-on-imports-of-welded-stainless-steel-pipes-from-the-people-s-republic-of-china-and-taiwan-29-june-2025/"]
       }
     ];
 
@@ -1544,15 +831,21 @@
       low: "priority-low"
     };
 
-    let currentRange = "30";
+    let currentRange = "all";
     let currentCategory = "all";
     let currentSort = "desc";
     let currentSearch = "";
     let featuredOnly = false;
     let currentDetailId = weeklyItems[0]?.id ?? null;
+    const favoriteIds = new Set();
 
     const itemList = document.getElementById("itemList");
     const detailPanel = document.getElementById("detailPanel");
+    const detailModal = document.getElementById("detailModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalMeta = document.getElementById("modalMeta");
+    const modalContent = document.getElementById("modalContent");
+    const modalClose = document.getElementById("modalClose");
     const searchInput = document.getElementById("searchInput");
     const sortSelect = document.getElementById("sortSelect");
     const focusToggle = document.getElementById("focusToggle");
@@ -1651,56 +944,94 @@
           </div>
           <div class="item-actions">
             <button class="ghost-btn" type="button" data-detail="${item.id}">查看详情</button>
+            <button class="ghost-btn" type="button" data-favorite="${item.id}">${favoriteIds.has(item.id) ? "已收藏" : "收藏"}</button>
             <button class="ghost-btn" type="button" data-copy="${item.id}">复制摘要</button>
+            <button class="ghost-btn" type="button" data-delete="${item.id}">删除</button>
           </div>
         </article>
       `).join("");
     }
 
-    function renderDetail(item) {
-      if (!item) {
+    function renderDetailPanel() {
+      const favorites = [...favoriteIds]
+        .map((id) => weeklyItems.find((item) => item.id === id))
+        .filter(Boolean);
+
+      if (!favorites.length) {
         detailPanel.innerHTML = `
-          <h2>没有可展示的详情</h2>
-          <div class="detail-meta"><span>请先调整筛选条件或选择其他条目。</span></div>
+          <h2>收藏夹</h2>
+          <div class="detail-meta"><span>单击打开详情，双击取消收藏。</span></div>
+          <div class="favorite-empty">左侧点“收藏”后，重要条目会沉淀到这里，方便你做一轮筛选和汇报取舍。</div>
         `;
         return;
       }
 
       detailPanel.innerHTML = `
-        <h2>${item.title}</h2>
+        <h2>收藏夹</h2>
         <div class="detail-meta">
-          <span class="badge ${categoryClassMap[item.category]}">${item.category}</span>
-          <span class="badge ${priorityClassMap[item.priority]}">${priorityLabelMap[item.priority]}</span>
-          <span>${formatDate(item.date)}</span>
-          <span>${item.platform}</span>
-          <span>${item.source}</span>
+          <span>已收藏 ${favorites.length} 条</span>
         </div>
-        <div class="detail-block">
-          <strong>摘要</strong>
+        <p class="favorite-hint">单击打开详情，双击取消收藏。</p>
+        <div class="favorite-list">
+          ${favorites.map((item) => `
+            <button class="favorite-item" type="button" data-favorite-open="${item.id}" title="单击打开详情，双击取消收藏">
+              <strong>${item.title}</strong>
+              <span>${formatDate(item.date)} · ${item.category} · ${item.source}</span>
+            </button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function openDetailModal(item) {
+      if (!item) return;
+
+      modalTitle.textContent = item.title;
+      modalMeta.innerHTML = `
+        <span class="badge ${categoryClassMap[item.category]}">${item.category}</span>
+        <span class="badge ${priorityClassMap[item.priority]}">${priorityLabelMap[item.priority]}</span>
+        <span>${formatDate(item.date)}</span>
+        <span>${item.platform}</span>
+        <span>${item.source}</span>
+      `;
+
+      modalContent.innerHTML = `
+        <section class="modal-section">
+          <h3>摘要</h3>
           <p>${item.summary}</p>
-        </div>
-        <div class="detail-block">
-          <strong>为什么重要</strong>
+        </section>
+        <section class="modal-section">
+          <h3>为什么重要</h3>
           <p>${item.whyItMatters}</p>
-        </div>
-        <div class="detail-block">
-          <strong>建议动作</strong>
+        </section>
+        <section class="modal-section">
+          <h3>建议动作</h3>
           <p>${item.nextAction}</p>
-        </div>
-        <div class="detail-block">
-          <strong>标签</strong>
+        </section>
+        <section class="modal-section">
+          <h3>标签</h3>
           <p>${(item.tags || []).join("、") || "无"}</p>
-        </div>
-        <div class="detail-block">
-          <strong>原始链接</strong>
-          <div class="detail-links">
+        </section>
+        <section class="modal-section">
+          <h3>原始链接</h3>
+          <div class="modal-links">
             ${item.links.length
               ? item.links.map((link) => `<a href="${link}" target="_blank" rel="noreferrer">${link}</a>`).join("")
               : "<span style='color: var(--muted);'>暂未填写</span>"
             }
           </div>
-        </div>
+        </section>
       `;
+
+      detailModal.classList.add("open");
+      detailModal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeDetailModal() {
+      detailModal.classList.remove("open");
+      detailModal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
     }
 
     function refresh() {
@@ -1711,7 +1042,7 @@
       if (!items.find((item) => item.id === currentDetailId)) {
         currentDetailId = items[0]?.id ?? null;
       }
-      renderDetail(items.find((item) => item.id === currentDetailId));
+      renderDetailPanel();
     }
 
     document.getElementById("rangeChips").addEventListener("click", (event) => {
@@ -1748,7 +1079,7 @@
     });
 
     document.getElementById("resetButton").addEventListener("click", () => {
-      currentRange = "30";
+      currentRange = "all";
       currentCategory = "all";
       currentSort = "desc";
       currentSearch = "";
@@ -1757,18 +1088,33 @@
       sortSelect.value = "desc";
       focusToggle.textContent = "仅看重点";
       focusToggle.classList.remove("solid-btn");
-      document.querySelectorAll("#rangeChips .chip").forEach((node) => node.classList.toggle("active", node.dataset.range === "30"));
+      document.querySelectorAll("#rangeChips .chip").forEach((node) => node.classList.toggle("active", node.dataset.range === "all"));
       document.querySelectorAll("#categoryChips .chip").forEach((node) => node.classList.toggle("active", node.dataset.category === "all"));
       refresh();
     });
 
     itemList.addEventListener("click", async (event) => {
       const detailButton = event.target.closest("[data-detail]");
+      const favoriteButton = event.target.closest("[data-favorite]");
       const copyButton = event.target.closest("[data-copy]");
+      const deleteButton = event.target.closest("[data-delete]");
 
       if (detailButton) {
         currentDetailId = Number(detailButton.dataset.detail);
         refresh();
+        openDetailModal(weeklyItems.find((entry) => entry.id === currentDetailId));
+        return;
+      }
+
+      if (favoriteButton) {
+        const id = Number(favoriteButton.dataset.favorite);
+        if (favoriteIds.has(id)) {
+          favoriteIds.delete(id);
+        } else {
+          favoriteIds.add(id);
+        }
+        refresh();
+        return;
       }
 
       if (copyButton) {
@@ -1784,6 +1130,70 @@
         } catch (error) {
           alert("浏览器未允许复制，请手动复制右侧详情。");
         }
+        return;
+      }
+
+      if (deleteButton) {
+        const id = Number(deleteButton.dataset.delete);
+        const item = weeklyItems.find((entry) => entry.id === id);
+        if (!item) return;
+        const confirmed = window.confirm(`确认删除这条信息吗？\n\n${item.title}`);
+        if (!confirmed) return;
+
+        const index = weeklyItems.findIndex((entry) => entry.id === id);
+        if (index === -1) return;
+        weeklyItems.splice(index, 1);
+        favoriteIds.delete(id);
+
+        if (currentDetailId === id) {
+          currentDetailId = weeklyItems[index]?.id ?? weeklyItems[index - 1]?.id ?? weeklyItems[0]?.id ?? null;
+        }
+
+        refresh();
+      }
+    });
+
+    let favoriteClickTimer = null;
+
+    detailPanel.addEventListener("click", (event) => {
+      const favoriteOpen = event.target.closest("[data-favorite-open]");
+      if (!favoriteOpen) return;
+      const id = Number(favoriteOpen.dataset.favoriteOpen);
+      if (favoriteClickTimer) {
+        window.clearTimeout(favoriteClickTimer);
+        favoriteClickTimer = null;
+      }
+      favoriteClickTimer = window.setTimeout(() => {
+        currentDetailId = id;
+        openDetailModal(weeklyItems.find((entry) => entry.id === id));
+        favoriteClickTimer = null;
+      }, 220);
+    });
+
+    detailPanel.addEventListener("dblclick", (event) => {
+      const favoriteOpen = event.target.closest("[data-favorite-open]");
+      if (!favoriteOpen) return;
+      const id = Number(favoriteOpen.dataset.favoriteOpen);
+      if (favoriteClickTimer) {
+        window.clearTimeout(favoriteClickTimer);
+        favoriteClickTimer = null;
+      }
+      if (!favoriteIds.has(id)) return;
+      favoriteIds.delete(id);
+      refresh();
+    });
+
+    modalClose.addEventListener("click", closeDetailModal);
+
+    detailModal.addEventListener("click", (event) => {
+      if (event.target === detailModal) {
+        closeDetailModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && detailModal.classList.contains("open")) {
+        closeDetailModal();
       }
     });
 
