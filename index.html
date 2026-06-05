@@ -111,7 +111,7 @@
 
     .chip-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
     }
 
@@ -579,10 +579,9 @@
       <div class="toolbar-block">
         <h2 class="toolbar-title">时间范围</h2>
         <div class="chip-grid" id="rangeChips">
-          <button class="chip" data-range="3">近三天</button>
-          <button class="chip" data-range="7">近一周</button>
+          <button class="chip active" data-range="7">近一周</button>
           <button class="chip" data-range="30">近一月</button>
-          <button class="chip active" data-range="all">全部</button>
+          <button class="chip" data-range="90">近三月</button>
         </div>
       </div>
 
@@ -1026,7 +1025,7 @@
       low: "priority-low"
     };
 
-    let currentRange = "all";
+    let currentRange = "7";
     let currentCategory = "all";
     let currentSort = "desc";
     let currentSearch = "";
@@ -1341,7 +1340,7 @@
     });
 
     document.getElementById("resetButton").addEventListener("click", () => {
-      currentRange = "all";
+      currentRange = "7";
       currentCategory = "all";
       currentSort = "desc";
       currentSearch = "";
@@ -1350,7 +1349,7 @@
       sortSelect.value = "desc";
       focusToggle.textContent = "仅看重点";
       focusToggle.classList.remove("solid-btn");
-      document.querySelectorAll("#rangeChips .chip").forEach((node) => node.classList.toggle("active", node.dataset.range === "all"));
+      document.querySelectorAll("#rangeChips .chip").forEach((node) => node.classList.toggle("active", node.dataset.range === "7"));
       document.querySelectorAll("#categoryChips .chip").forEach((node) => node.classList.toggle("active", node.dataset.category === "all"));
       refresh();
     });
